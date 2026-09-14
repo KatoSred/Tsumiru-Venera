@@ -318,6 +318,9 @@ class ReaderScreen extends HookConsumerWidget {
             // the point where the just-read chapters may be deleted. Container-
             // driven: the server round-trip outlives this route's ref.
             unawaited(flushPendingReadDeletes(providerContainer));
+            // Re-reconcile with the normal (not +1) deleteWhileReading slots
+            // so the boundary buffer from the last chapter boundary is released.
+            unawaited(reconcileMangaContainer(providerContainer, mangaId));
             // The write above lands first (awaited); defer the list refreshes
             // past this frame — invalidating during the pop's build phase trips
             // the Riverpod-3 modify-during-build assert.
