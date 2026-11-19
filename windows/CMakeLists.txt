@@ -2,6 +2,10 @@
 cmake_minimum_required(VERSION 3.14)
 project(tsumiru LANGUAGES CXX)
 
+# Plugin sources are UTF-8; MSVC on a GBK (code page 936) host misreads them
+# and /WX turns the resulting C4819 warning into an error.
+add_compile_options(/utf-8)
+
 # The name of the executable created for the application. Change this to change
 # the on-disk name of your application.
 set(BINARY_NAME "tsumiru")
