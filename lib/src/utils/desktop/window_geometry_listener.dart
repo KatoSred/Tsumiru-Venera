@@ -73,7 +73,10 @@ class WindowGeometryListener with WindowListener {
       await _flush().timeout(const Duration(seconds: 2));
     } catch (_) {
     } finally {
-      await windowManager.destroy();
+      // window_manager#478: destroy() stalls for seconds on Windows; routing
+      // through close() with preventClose disabled tears down immediately.
+      await windowManager.setPreventClose(false);
+      await windowManager.close();
     }
   }
 
