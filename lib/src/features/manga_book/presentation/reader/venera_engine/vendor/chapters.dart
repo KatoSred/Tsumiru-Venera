@@ -11,13 +11,6 @@
 //    view keeps the same tab/group structure.
 //  - "Chapters"/etc translations and ts/context extensions come from the
 //    compat shims.
-//  - M5 reskin: sidebar visuals restyled to Tsumiru — surface background,
-//    FluentIcons glyphs, chapter rows aligned with Tsumiru's chapter sheet
-//    (current chapter highlighted in primary, downloaded marks use the brand
-//    success color). List structure/order toggling unchanged.
-//    NOTE: the vendored reader has no per-chapter "read" state (VENDOR-CUT of
-//    HistoryManager in M1), so read/unread iconography can't be reproduced;
-//    the downloaded mark fills that slot.
 
 part of 'reader.dart';
 
@@ -51,10 +44,7 @@ class _ChaptersViewState extends State<_ChaptersView> {
   Widget build(BuildContext context) {
     var chapters = widget.reader.widget.chapters!;
     var current = widget.reader.chapter - 1;
-    final colorScheme = context.colorScheme;
     return Scaffold(
-      // M5: sidebar surface matches Tsumiru's sheet styling.
-      backgroundColor: colorScheme.surface,
       body: SmoothCustomScrollView(
         controller: _scrollController,
         slivers: [
@@ -62,35 +52,16 @@ class _ChaptersViewState extends State<_ChaptersView> {
           // native AppBar.
           SliverToBoxAdapter(
             child: AppBar(
-              title: Text(
-                "Chapters".tl,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: colorScheme.onSurface,
-                ),
-              ),
-              backgroundColor: colorScheme.surface,
-              foregroundColor: colorScheme.onSurface,
-              elevation: 0,
+              title: Text("Chapters".tl),
               actions: [
                 Tooltip(
                   message: "Click to change the order".tl,
                   child: TextButton.icon(
                     icon: Icon(
-                      !desc
-                          ? FluentIcons.arrow_up_24_regular
-                          : FluentIcons.arrow_down_24_regular,
+                      !desc ? Icons.arrow_upward : Icons.arrow_downward,
                       size: 18,
-                      color: colorScheme.primary,
                     ),
-                    label: Text(
-                      !desc ? "Ascending".tl : "Descending".tl,
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: colorScheme.onSurfaceVariant,
-                      ),
-                    ),
+                    label: Text(!desc ? "Ascending".tl : "Descending".tl),
                     onPressed: () {
                       setState(() {
                         desc = !desc;
@@ -178,22 +149,9 @@ class _GroupedChaptersViewState extends State<_GroupedChaptersView>
   Widget build(BuildContext context) {
     // VENDOR-CUT: venera Appbar / AppTabBar / TabViewBody replaced by native
     // material widgets.
-    final colorScheme = context.colorScheme;
     return Column(
       children: [
-        AppBar(
-          title: Text(
-            "Chapters".tl,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: colorScheme.onSurface,
-            ),
-          ),
-          backgroundColor: colorScheme.surface,
-          foregroundColor: colorScheme.onSurface,
-          elevation: 0,
-        ),
+        AppBar(title: Text("Chapters".tl)),
         TabBar(
           controller: tabController,
           tabs: chapters.groups.keys.map((e) => Tab(text: e)).toList(),
@@ -261,47 +219,33 @@ class _ChapterListTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // M5: row style mirrors Tsumiru's reader chapter sheet — current chapter
-    // keeps the primary edge bar and gets primary semibold text; the
-    // downloaded mark uses the brand success hue.
-    final colorScheme = context.colorScheme;
     return InkWell(
       onTap: onTap,
       child: Container(
         height: 48,
         padding: const EdgeInsets.symmetric(horizontal: 16),
         decoration: BoxDecoration(
-          color: isActive
-              ? colorScheme.primaryContainer.toOpacity(0.35)
-              : Colors.transparent,
           border: Border(
             left: BorderSide(
-              color: isActive ? colorScheme.primary : Colors.transparent,
+              color:
+                  isActive ? context.colorScheme.primary : Colors.transparent,
               width: 4,
             ),
           ),
         ),
         child: Row(
           children: [
-            Expanded(
-              child: Text(
-                title,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
-                  color: isActive
-                      ? colorScheme.primary
-                      : colorScheme.onSurface,
-                ),
-              ),
+            Text(
+              title,
+              style: isActive
+                  ? ts.withColor(context.colorScheme.primary).bold.s16
+                  : ts.s16,
             ),
+            const Spacer(),
             if (isDownloaded)
               Icon(
-                FluentIcons.checkmark_circle_24_regular,
-                size: 18,
-                color: BrandColors.of(context).success,
+                Icons.download_done_rounded,
+                color: context.colorScheme.secondary,
               ),
           ],
         ),

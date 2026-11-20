@@ -12,34 +12,15 @@
 //    enableClockAndBatteryInfoInReader removed (battery_plus dependency).
 //  - VENDOR-CUT: venera ReaderSettings page entry replaced with a M4
 //    placeholder side bar.
-//  - VENDOR-CUT: CustomSlider replaced by native Slider in M1, then by
-//    Tsumiru's BrandPageSeekBar in M5 (which also covers the `reversed`
-//    hint via `inverted`).
+//  - VENDOR-CUT: CustomSlider replaced by native Slider (M5 will swap in
+//    Tsumiru's BrandPageSeekbar; `reversed` hint not supported yet).
 //  - VENDOR-CUT: CacheManager reads replaced by flutter_cache_manager
 //    (DefaultCacheManager) for save/share image bytes.
 //  - Settings reads bridged to compat getReaderSetting.
 //  - showToast/showSideBar/BlurEffect/ts/.tl/context extensions come from
 //    compat shims.
-//  - M5 reskin: chrome visuals restyled to Tsumiru (layout skeleton, show/hide
-//    state machine, animation timings and gesture wiring untouched). All
-//    colors come from colorScheme / _readerNavSurface; icons are FluentIcons;
-//    the progress seekbar is Tsumiru's BrandPageSeekBar imported directly (its
-//    dependency surface is flutter/material + material_ui theme extensions
-//    only — no riverpod — see reader.dart imports).
 
 part of 'reader.dart';
-
-/// Mirror of Tsumiru's `readerNavSurface` (utils/theme/brand.dart).
-///
-/// TYPE NOTE: brand.dart's helper takes material_ui's own `ColorScheme` type
-/// (material_ui shadows flutter's), so calling it with the vendor shim's
-/// flutter `context.colorScheme` fails to compile. The vendor keeps flutter
-/// types end-to-end and re-implements the one-line formula here instead of
-/// pulling material_ui into the vendored reader. Keep in sync with brand.dart.
-Color _readerNavSurface(ColorScheme cs) =>
-    cs.surface.withValues(
-      alpha: cs.brightness == Brightness.dark ? 0.9 : 0.95,
-    );
 
 class _ReaderScaffold extends StatefulWidget {
   const _ReaderScaffold({required this.child});
@@ -88,14 +69,24 @@ class _ReaderScaffoldState extends State<_ReaderScaffold> {
 
   @override
   void initState() {
-    // M5: the sliderFocus node (venera CustomSlider focus guard) is gone with
-    // the native Slider — BrandPageSeekBar is a pure GestureDetector.
+    sliderFocus.canRequestFocus = false;
+    sliderFocus.addListener(() {
+      if (sliderFocus.hasFocus) {
+        sliderFocus.nextFocus();
+      }
+    });
     if (rotation != null) {
       SystemChrome.setPreferredOrientations(DeviceOrientation.values);
     }
     super.initState();
     // VENDOR-CUT: Future.delayed addDragListener removed with the
     // quickCollectImage (Swipe) feature.
+  }
+
+  @override
+  void dispose() {
+    sliderFocus.dispose();
+    super.dispose();
   }
 
   void openOrClose() {
@@ -173,19 +164,15 @@ class _ReaderScaffoldState extends State<_ReaderScaffold> {
       context.reader.widget.chapters?.titles.elementAtOrNull(
         context.reader.chapter - 1,
       );
-    // M5: Tsumiru chrome typography — title 16/w600 like reader_top_bar's
-    // title treatment; secondary line muted. Layout skeleton unchanged.
-    final colorScheme = context.colorScheme;
 
     return BlurEffect(
       child: Container(
         padding: EdgeInsets.only(top: context.padding.top),
         decoration: BoxDecoration(
-          // Same translucent surface treatment as Tsumiru's readerNavSurface.
-          color: _readerNavSurface(colorScheme),
+          color: context.colorScheme.surface.toOpacity(0.92),
           border: Border(
             bottom: BorderSide(
-              color: colorScheme.outlineVariant,
+              color: Colors.grey.toOpacity(0.5),
               width: 0.5,
             ),
           ),
@@ -198,22 +185,12 @@ class _ReaderScaffoldState extends State<_ReaderScaffold> {
           child: Row(
             children: [
               const SizedBox(width: 8),
-              IconButton(
-                onPressed: () => context.pop(),
-                icon: Icon(
-                  FluentIcons.ios_arrow_24_regular,
-                  color: colorScheme.onSurface,
-                ),
-              ),
+              const BackButton(),
               const SizedBox(width: 8),
               Expanded(
                 child: epName == null ? Text(
                   context.reader.widget.name,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: colorScheme.onSurface,
-                  ),
+                  style: ts.s18,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ) : Column(
@@ -222,20 +199,13 @@ class _ReaderScaffoldState extends State<_ReaderScaffold> {
                   children: [
                     Text(
                       context.reader.widget.name,
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: colorScheme.onSurface,
-                      ),
+                      style: ts.s16,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                     Text(
                       epName,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: colorScheme.onSurfaceVariant,
-                      ),
+                      style: ts.s12,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -248,10 +218,7 @@ class _ReaderScaffoldState extends State<_ReaderScaffold> {
               Tooltip(
                 message: "Settings".tl,
                 child: IconButton(
-                  icon: Icon(
-                    FluentIcons.settings_24_regular,
-                    color: colorScheme.onSurface,
-                  ),
+                  icon: const Icon(Icons.settings),
                   onPressed: openSetting,
                 ),
               ),
@@ -270,7 +237,6 @@ class _ReaderScaffoldState extends State<_ReaderScaffold> {
     if (context.reader.widget.chapters == null) {
       text = "P$displayPage";
     }
-    final colorScheme = context.colorScheme;
 
     final buttons = [
       // VENDOR-CUT: "Collect the image" button removed with the
@@ -279,10 +245,7 @@ class _ReaderScaffoldState extends State<_ReaderScaffold> {
         Tooltip(
           message: "${"Full Screen".tl}(F12)",
           child: IconButton(
-            icon: Icon(
-              FluentIcons.full_screen_maximize_24_regular,
-              color: colorScheme.onSurface,
-            ),
+            icon: const Icon(Icons.fullscreen),
             onPressed: () {
               context.reader.fullscreen();
             },
@@ -294,20 +257,11 @@ class _ReaderScaffoldState extends State<_ReaderScaffold> {
           child: IconButton(
             icon: () {
               if (rotation == null) {
-                return Icon(
-                  FluentIcons.arrow_rotate_clockwise_24_regular,
-                  color: colorScheme.onSurface,
-                );
+                return const Icon(Icons.screen_rotation);
               } else if (rotation == false) {
-                return Icon(
-                  FluentIcons.arrow_autofit_height_24_regular,
-                  color: colorScheme.onSurface,
-                );
+                return const Icon(Icons.screen_lock_portrait);
               } else {
-                return Icon(
-                  FluentIcons.arrow_autofit_width_24_regular,
-                  color: colorScheme.onSurface,
-                );
+                return const Icon(Icons.screen_lock_landscape);
               }
             }.call(),
             onPressed: () {
@@ -340,14 +294,8 @@ class _ReaderScaffoldState extends State<_ReaderScaffold> {
         message: "Auto Page Turning".tl,
         child: IconButton(
           icon: context.reader.autoPageTurningTimer != null
-              ? Icon(
-                  FluentIcons.timer_24_filled,
-                  color: colorScheme.primary,
-                )
-              : Icon(
-                  FluentIcons.timer_24_regular,
-                  color: colorScheme.onSurface,
-                ),
+              ? const Icon(Icons.timer)
+              : const Icon(Icons.timer_sharp),
           onPressed: () {
             context.reader.autoPageTurning(
               context.reader.cid,
@@ -361,32 +309,20 @@ class _ReaderScaffoldState extends State<_ReaderScaffold> {
         Tooltip(
           message: "Chapters".tl,
           child: IconButton(
-            icon: Icon(
-              FluentIcons.library_24_regular,
-              color: colorScheme.onSurface,
-            ),
+            icon: const Icon(Icons.library_books),
             onPressed: openChapterDrawer,
           ),
         ),
       Tooltip(
         message: "Save Image".tl,
         child: IconButton(
-          icon: Icon(
-            FluentIcons.arrow_download_24_regular,
-            color: colorScheme.onSurface,
-          ),
+          icon: const Icon(Icons.download),
           onPressed: saveCurrentImage,
         ),
       ),
       Tooltip(
         message: "Share".tl,
-        child: IconButton(
-          icon: Icon(
-            FluentIcons.share_24_regular,
-            color: colorScheme.onSurface,
-          ),
-          onPressed: share,
-        ),
+        child: IconButton(icon: const Icon(Icons.share), onPressed: share),
       ),
     ];
 
@@ -398,7 +334,7 @@ class _ReaderScaffoldState extends State<_ReaderScaffold> {
           Row(
             children: [
               const SizedBox(width: 8),
-              IconButton(
+              IconButton.filledTonal(
                 onPressed: () => !isReversed
                     ? context.reader.chapter > 1
                           ? context.reader.toPrevChapter()
@@ -406,14 +342,10 @@ class _ReaderScaffoldState extends State<_ReaderScaffold> {
                     : context.reader.chapter < context.reader.maxChapter
                     ? context.reader.toNextChapter()
                     : context.reader.toPage(context.reader.maxPage),
-                // Same chapter-skip glyphs as Tsumiru's chapterNavButtons.
-                icon: Icon(
-                  FluentIcons.previous_24_filled,
-                  color: colorScheme.primary,
-                ),
+                icon: const Icon(Icons.first_page),
               ),
               Expanded(child: buildSlider()),
-              IconButton(
+              IconButton.filledTonal(
                 onPressed: () => !isReversed
                     ? context.reader.chapter < context.reader.maxChapter
                           ? context.reader.toNextChapter()
@@ -421,10 +353,7 @@ class _ReaderScaffoldState extends State<_ReaderScaffold> {
                     : context.reader.chapter > 1
                     ? context.reader.toPrevChapter()
                     : context.reader.toPage(1),
-                icon: Icon(
-                  FluentIcons.next_24_filled,
-                  color: colorScheme.primary,
-                ),
+                icon: const Icon(Icons.last_page),
               ),
               const SizedBox(width: 8),
             ],
@@ -437,24 +366,12 @@ class _ReaderScaffoldState extends State<_ReaderScaffold> {
                   if (!small)
                     Container(
                       height: 24,
-                      padding: const EdgeInsets.fromLTRB(10, 2, 10, 0),
+                      padding: const EdgeInsets.fromLTRB(6, 2, 6, 0),
                       decoration: BoxDecoration(
-                        color: colorScheme.surfaceContainerHigh,
-                        borderRadius: BorderRadius.circular(999),
+                        color: Theme.of(context).colorScheme.tertiaryContainer,
+                        borderRadius: BorderRadius.circular(8),
                       ),
-                      child: Center(
-                        child: Text(
-                          text,
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: colorScheme.onSurface,
-                            fontFeatures: const [
-                              FontFeature.tabularFigures(),
-                            ],
-                          ),
-                        ),
-                      ),
+                      child: Center(child: Text(text)),
                     ).paddingLeft(16),
                   const Spacer(),
                   for (var button in buttons)
@@ -475,11 +392,11 @@ class _ReaderScaffoldState extends State<_ReaderScaffold> {
     return BlurEffect(
       child: Container(
         decoration: BoxDecoration(
-          color: _readerNavSurface(colorScheme),
+          color: context.colorScheme.surface.toOpacity(0.92),
           border: isOpen
               ? Border(
                   top: BorderSide(
-                    color: colorScheme.outlineVariant,
+                    color: Colors.grey.toOpacity(0.5),
                     width: 0.5,
                   ),
                 )
@@ -497,28 +414,25 @@ class _ReaderScaffoldState extends State<_ReaderScaffold> {
     );
   }
 
+  var sliderFocus = FocusNode();
+
   Widget buildSlider() {
-    // M5: venera CustomSlider -> native Slider (M1) -> Tsumiru's
-    // BrandPageSeekBar (M5).
-    //
-    // IMPORT DECISION: BrandPageSeekBar is imported directly
-    // (reader.dart -> ../../widgets/brand_page_seekbar.dart). Its dependency
-    // surface is flutter/material + material_ui theme lookups +
-    // BrandColors/readerNavSurface from utils/theme/brand.dart — no riverpod,
-    // no Tsumiru controller/state layer — so direct use keeps the seekbar
-    // pixel-identical with Tsumiru's reader (rounded track, brand gradient
-    // fill, page ticks, glowing marker) and stays theme-aware in both modes.
-    // The seekbar is 0-based, venera's reader page is 1-based; `inverted`
-    // covers the RTL/reversed hint the old CustomSlider carried.
+    // Clamp page to maxPage
     final displayPage = context.reader.page.clamp(1, context.reader.maxPage);
-    return BrandPageSeekBar(
-      currentValue: displayPage - 1,
-      maxValue: context.reader.maxPage.clamp(1, 1 << 16),
+    // VENDOR-CUT: venera CustomSlider replaced by the native Slider for M1
+    // (M5 will swap in Tsumiru's BrandPageSeekbar). The `reversed` hint is
+    // not supported by the native widget and is ignored for now.
+    return Slider(
+      focusNode: sliderFocus,
+      value: displayPage.toDouble(),
+      min: 1,
+      max: context.reader.maxPage
+          .clamp(displayPage, 1 << 16)
+          .toDouble(),
+      divisions: (context.reader.maxPage - 1).clamp(2, 1 << 16),
       onChanged: (i) {
-        context.reader.toPage(i + 1);
+        context.reader.toPage(i.toInt());
       },
-      inverted: isReversed,
-      capsuleColor: _readerNavSurface(context.colorScheme),
     );
   }
 
@@ -541,28 +455,17 @@ class _ReaderScaffoldState extends State<_ReaderScaffold> {
       left: 25,
       child: Stack(
         children: [
-          // Keep the stroke trick for readability over page art, but derive
-          // both colors from the theme surface pair.
           Text(
             text,
             style: TextStyle(
               fontSize: 14,
-              fontWeight: FontWeight.w600,
               foreground: Paint()
                 ..style = PaintingStyle.stroke
                 ..strokeWidth = 1.4
-                ..color = context.colorScheme.surface,
+                ..color = context.colorScheme.onInverseSurface,
             ),
           ),
-          Text(
-            text,
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: context.colorScheme.onSurface,
-              fontFeatures: const [FontFeature.tabularFigures()],
-            ),
-          ),
+          Text(text),
         ],
       ),
     );
@@ -650,15 +553,15 @@ class _ReaderScaffoldState extends State<_ReaderScaffold> {
           height: 58,
           clipBehavior: Clip.antiAlias,
           decoration: BoxDecoration(
-            color: context.colorScheme.primaryContainer,
+            color: Theme.of(context).colorScheme.primaryContainer,
             borderRadius: BorderRadius.circular(16),
           ),
           child: Icon(
             lastValue == 1
-                ? FluentIcons.ios_arrow_rtl_24_regular
-                : FluentIcons.ios_arrow_24_regular,
+                ? Icons.arrow_forward_ios
+                : Icons.arrow_back_ios_outlined,
             size: 24,
-            color: context.colorScheme.onPrimaryContainer,
+            color: Theme.of(context).colorScheme.onPrimaryContainer,
           ),
         );
       case -1:
@@ -667,7 +570,7 @@ class _ReaderScaffoldState extends State<_ReaderScaffold> {
           width: 58 + extraWidth,
           height: 58,
           child: Material(
-            color: context.colorScheme.primaryContainer,
+            color: Theme.of(context).colorScheme.primaryContainer,
             borderRadius: BorderRadius.circular(16),
             elevation: 2,
             child: InkWell(
@@ -687,7 +590,7 @@ class _ReaderScaffoldState extends State<_ReaderScaffold> {
                     showFloatingButtonValue,
                   ),
                   size: 24,
-                  color: context.colorScheme.onPrimaryContainer,
+                  color: Theme.of(context).colorScheme.onPrimaryContainer,
                 ),
               ),
             ),
@@ -699,13 +602,9 @@ class _ReaderScaffoldState extends State<_ReaderScaffold> {
 
   IconData _getArrowIcon(bool reversed, int value) {
     if (reversed) {
-      return value == 1
-          ? FluentIcons.ios_arrow_24_regular
-          : FluentIcons.ios_arrow_rtl_24_regular;
+      return value == 1 ? Icons.arrow_back_ios_outlined : Icons.arrow_forward_ios;
     } else {
-      return value == 1
-          ? FluentIcons.ios_arrow_rtl_24_regular
-          : FluentIcons.ios_arrow_24_regular;
+      return value == 1 ? Icons.arrow_forward_ios : Icons.arrow_back_ios_outlined;
     }
   }
 
@@ -814,27 +713,16 @@ class _ReaderSettingsPlaceholder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = context.colorScheme;
     return Padding(
       padding: const EdgeInsets.all(24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Reader Settings',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: colorScheme.onSurface,
-            ),
-          ),
+          Text('Reader Settings', style: ts.s18),
           const SizedBox(height: 12),
           Text(
             'Not available yet — Tsumiru settings panel will be wired in M4.',
-            style: TextStyle(
-              fontSize: 15,
-              color: colorScheme.onSurfaceVariant,
-            ),
+            style: ts.s16,
           ),
         ],
       ),
@@ -873,9 +761,7 @@ class _SelectImageOverlayContentState
         widget.onTap(details.globalPosition);
       },
       child: Container(
-        // Scrim over page art: theme scrim token keeps it consistent across
-        // light/dark without a hardcoded black.
-        color: context.colorScheme.scrim.toOpacity(0.2),
+        color: Colors.black.withAlpha(50),
         child: Align(
           alignment: Alignment(0, -0.8),
           child: Container(
@@ -888,17 +774,13 @@ class _SelectImageOverlayContentState
             ),
             child: Row(
               children: [
-                const SizedBox(width: 12),
-                Icon(
-                  FluentIcons.info_24_regular,
-                  size: 20,
-                  color: context.colorScheme.onSurfaceVariant,
-                ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 8),
+                const Icon(Icons.info_outline),
+                const SizedBox(width: 16),
                 Text(
                   "Click to select an image".tl,
                   style: TextStyle(
-                    fontSize: 15,
+                    fontSize: 16,
                     color: context.colorScheme.onSurface,
                   ),
                 ),

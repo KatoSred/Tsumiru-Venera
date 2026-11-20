@@ -11,8 +11,6 @@
 //  - Settings reads bridged to compat getReaderSetting; showMenuX /
 //    MenuEntry / saveFile / detectFileType / context extensions come from
 //    compat shims. Gesture logic otherwise unchanged.
-//  - M5 reskin: the secondary-tap menu's IconData arguments switched to
-//    FluentIcons; gesture logic and handlers untouched.
 
 part of 'reader.dart';
 
@@ -287,35 +285,33 @@ class _ReaderGestureDetectorState extends State<_ReaderGestureDetector> {
   }
 
   void onSecondaryTapUp(Offset location) {
-    // M5: FluentIcons glyphs to match the reskinned chrome; menu construction
-    // and handlers unchanged.
     showMenuX(
       context,
       location,
       [
         MenuEntry(
-          icon: FluentIcons.settings_24_regular,
+          icon: Icons.settings,
           text: "Settings".tl,
           onClick: () {
             context.readerScaffold.openSetting();
           },
         ),
         MenuEntry(
-          icon: FluentIcons.library_24_regular,
+          icon: Icons.menu,
           text: "Chapters".tl,
           onClick: () {
             context.readerScaffold.openChapterDrawer();
           },
         ),
         MenuEntry(
-          icon: FluentIcons.full_screen_maximize_24_regular,
+          icon: Icons.fullscreen,
           text: "Fullscreen".tl,
           onClick: () {
             context.reader.fullscreen();
           },
         ),
         MenuEntry(
-          icon: FluentIcons.sign_out_24_regular,
+          icon: Icons.exit_to_app,
           text: "Exit".tl,
           onClick: () {
             context.pop();
@@ -325,7 +321,7 @@ class _ReaderGestureDetectorState extends State<_ReaderGestureDetector> {
         // clipboard_image dependency; not needed for M1).
         if (!reader.isLoading)
           MenuEntry(
-            icon: FluentIcons.arrow_download_24_regular,
+            icon: Icons.download_outlined,
             text: "Save Image".tl,
             onClick: () => saveImage(location),
           ),

@@ -13,8 +13,6 @@
 //  - _preDownloadImage now uses precacheImage (no venera download cache).
 //  - Direct appdata.settings[...] reads bridged to compat getReaderSetting.
 //  - NetworkError comes from the compat shim.
-//  - M5 reskin: loading ring and chapter-transition pill use colorScheme
-//    semantics + FluentIcons glyphs (logic untouched).
 
 part of 'reader.dart';
 
@@ -103,13 +101,7 @@ class _ReaderImagesState extends State<_ReaderImages> {
   Widget build(BuildContext context) {
     if (reader.isLoading) {
       load();
-      // M5: primary accent ring, consistent with the ComicImage loader.
-      return Center(
-        child: CircularProgressIndicator(
-          color: context.colorScheme.primary,
-          backgroundColor: context.colorScheme.surfaceContainerHigh,
-        ),
-      );
+      return const Center(child: CircularProgressIndicator());
     } else if (error != null) {
       return GestureDetector(
         onTap: () {
@@ -1367,21 +1359,12 @@ class _SwipeChangeChapterProgressState
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
-            widget.isPrev
-                ? FluentIcons.arrow_down_24_regular
-                : FluentIcons.arrow_up_24_regular,
+            widget.isPrev ? Icons.arrow_downward : Icons.arrow_upward,
             color: context.colorScheme.onSurface,
             size: 16,
           ),
-          const SizedBox(width: 6),
-          Text(
-            msg,
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
-              color: context.colorScheme.onSurface,
-            ),
-          ),
+          const SizedBox(width: 4),
+          Text(msg),
         ],
       ).paddingVertical(6).paddingHorizontal(16),
     );
