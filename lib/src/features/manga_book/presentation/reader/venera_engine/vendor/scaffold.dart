@@ -406,8 +406,13 @@ class _ReaderScaffoldState extends State<_ReaderScaffold> {
                       child: Center(
                         child: Text(
                           text,
+                          // ADAPTER: inherit:false — the inherited
+                          // DefaultTextStyle leaks a yellow underline
+                          // decoration (same root cause as the floating
+                          // badge's "red on yellow" style).
                           style: TextStyle(
                             fontSize: 11,
+                            inherit: false,
                             color:
                                 Theme.of(context).colorScheme.onPrimaryContainer,
                           ),
