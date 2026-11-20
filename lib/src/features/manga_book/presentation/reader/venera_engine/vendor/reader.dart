@@ -176,6 +176,10 @@ abstract interface class VeneraReaderController {
 
   /// Replaces the current image list (debug/adapter entry).
   void injectImages(List<String> pages);
+
+  /// ADAPTER(M4): rebuilds the reader chrome so host-side setting changes
+  /// (settings panel toggles) apply without leaving the reader.
+  void updateChrome();
 }
 
 class _ReaderState extends State<Reader>
@@ -352,7 +356,10 @@ class _ReaderState extends State<Reader>
         initialEntries: [
           OverlayEntry(
             builder: (context) {
+              // ADAPTER(M4): keyed so the host controller can reach the
+              // scaffold's update() when host settings change.
               return _ReaderScaffold(
+                key: _scaffoldKey,
                 child: _ReaderGestureDetector(
                   child: _ReaderImages(key: Key(chapter.toString())),
                 ),
@@ -467,6 +474,17 @@ class _ReaderState extends State<Reader>
       _updateHistoryTimer = null;
       _emitProgress();
     }
+  }
+
+  /// ADAPTER(M4): scaffold key for the host controller's updateChrome().
+  final GlobalKey<_ReaderScaffoldState> _scaffoldKey =
+      GlobalKey<_ReaderScaffoldState>();
+
+  @override
+  void updateChrome() {
+    _scaffoldKey.currentState?.update();
+    // The images/gesture layers also read settings during their builds.
+    setState(() {});
   }
 
   bool get isFirstChapterOfGroup {

@@ -23,7 +23,8 @@
 part of 'reader.dart';
 
 class _ReaderScaffold extends StatefulWidget {
-  const _ReaderScaffold({required this.child});
+  // ADAPTER(M4): super.key exposed for the host controller's scaffold key.
+  const _ReaderScaffold({super.key, required this.child});
 
   final Widget child;
 
@@ -392,12 +393,15 @@ class _ReaderScaffoldState extends State<_ReaderScaffold> {
                 children: [
                   if (!small)
                     // ADAPTER: follow the app's theme primary color (user
-                    // request) instead of the fixed tertiaryContainer pink.
+                    // request) at reduced opacity (user feedback: too solid).
                     Container(
                       height: 20,
                       padding: const EdgeInsets.fromLTRB(5, 1, 5, 0),
                       decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.primary,
+                        color: Theme.of(context)
+                            .colorScheme
+                            .primary
+                            .toOpacity(0.55),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Center(
