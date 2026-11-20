@@ -167,3 +167,13 @@ class WebBuildReloadRequired extends Notifier<bool> {
 
 final webBuildReloadRequiredProvider =
     NotifierProvider<WebBuildReloadRequired, bool>(WebBuildReloadRequired.new);
+
+/// ADAPTER(fork): client-side master switch for update alert dialogs.
+/// Defaults to OFF — the base project's releases would install a non-Venera
+/// build over this one. The About screen's manual check stays available.
+@riverpod
+class UpdateAlertsEnabled extends _$UpdateAlertsEnabled
+    with SharedPreferenceClientMixin<bool> {
+  @override
+  bool? build() => initialize(DBKeys.updateAlertsEnabled);
+}

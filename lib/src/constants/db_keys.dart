@@ -158,6 +158,10 @@ enum DBKeys {
   webUIVersion(null),
   basicAuthDeprecationLastShown('{}'),
   updateProgressAfterReading(true),
+
+  // ADAPTER(fork): client-side master switch for update alert dialogs —
+  // defaults to OFF (upstream builds would overwrite the Venera engine).
+  updateAlertsEnabled(false),
   updateProgressManualMarkRead(true),
   // 0 selects automatic columns using gridMangaCoverMinWidth.
   libraryPortraitColumns(0),

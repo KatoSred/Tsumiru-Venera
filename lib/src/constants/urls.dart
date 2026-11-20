@@ -4,17 +4,19 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+// ADAPTER(fork): update/source URLs point to the fork repo — the upstream
+// releases would install a non-Venera build over this one.
 enum AppUrls {
-  githubUrl(url: "https://github.com/Suwayomi/Suwayomi-Tsumiru"),
+  githubUrl(url: "https://github.com/KatoSred/Tsumiru-Venera"),
   latestReleaseUrl(
-    url: "https://github.com/Suwayomi/Suwayomi-Tsumiru/releases/latest",
+    url: "https://github.com/KatoSred/Tsumiru-Venera/releases/latest",
   ),
   privacyPolicy(url: "https://tsumiru.app/privacy/"),
   tachideskHelp(url: "https://tsumiru.app/docs/guides/getting-started"),
   whatsNew(url: "https://github.com/Suwayomi/Suwayomi-Tsumiru/releases"),
   latestReleaseApiUrl(
     url:
-        "https://api.github.com/repos/Suwayomi/Suwayomi-Tsumiru/releases/latest",
+        "https://api.github.com/repos/KatoSred/Tsumiru-Venera/releases/latest",
   ),
   weblateTranslate(url: "https://hosted.weblate.org/engage/suwayomi/"),
   flareSolverr(

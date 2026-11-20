@@ -37,6 +37,12 @@ class UpdateAlertChecker {
       .read(settledAccountAccessProvider)
       .allows(Enum$UserPermission.MANAGE_SETTINGS);
   Future<void> start() async {
+    // ADAPTER(fork): update alerts are gated by updateAlertsEnabled, which
+    // defaults to OFF (base-project releases would install a non-Venera
+    // build). The About screen's manual check is unaffected.
+    final updateAlertsEnabled =
+        container.read(updateAlertsEnabledProvider) ?? false;
+    if (!updateAlertsEnabled) return;
     await _tick(check: false);
     if (!_valid || !_canManage) return;
     final remaining =
