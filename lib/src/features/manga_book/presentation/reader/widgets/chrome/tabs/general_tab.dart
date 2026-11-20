@@ -42,46 +42,9 @@ class GeneralTab extends ConsumerWidget {
     return ListView(
       primary: false,
       children: [
-        // M4: reader engine split — the vendored Venera engine renders the
-        // reader when selected (per-series overridable via the model).
-        _SectionLabel(context.l10n.readerEngine),
-        _ChipRow(
-          children: [
-            SegmentedButton<ReaderEngine>(
-              segments: const [
-                ButtonSegment(
-                  value: ReaderEngine.tsumiru,
-                  label: Text('Tsumiru'),
-                ),
-                ButtonSegment(
-                  value: ReaderEngine.venera,
-                  label: Text('Venera'),
-                ),
-              ],
-              selected: {settings.readerEngine},
-              onSelectionChanged: (selection) =>
-                  model.setReaderEngine(selection.first),
-            ),
-          ],
-        ),
-        if (settings.readerEngine == ReaderEngine.venera) ...[
-          _SectionLabel(context.l10n.veneraEngineGroup),
-          CompactSwitchListTile(
-            controlAffinity: ListTileControlAffinity.trailing,
-            title: Text(context.l10n.veneraPageTurnVolumeKey),
-            value: settings.veneraPageTurnVolumeKey,
-            onChanged: model.setVeneraPageTurnVolumeKey,
-          ),
-          SliderSettingTile(
-            title: context.l10n.veneraWheelSensitivity,
-            value: settings.veneraWheelSensitivity,
-            defaultValue: DBKeys.veneraWheelSensitivity.initial as double,
-            min: 0.25,
-            max: 4,
-            getSliderLabel: (val) => '${val.toStringAsFixed(2)}x',
-            onChanged: model.setVeneraWheelSensitivity,
-          ),
-        ],
+        // Reader-engine split moved to the app-level settings (reader
+        // settings page + Venera reader settings page); the in-reader sheet
+        // stays engine-pure (each engine shows only its own settings).
         _SectionLabel(context.l10n.readerBackgroundColor),
         // Chip order is the UI order, not the stored-int order.
         _ChipRow(

@@ -160,51 +160,8 @@ class ReadingModeTab extends ConsumerWidget {
         ),
         // M4: Venera engine knobs — only shown when this series reads with
         // the vendored engine; Tsumiru-native settings above stay untouched.
-        if (settings.readerEngine == ReaderEngine.venera) ...[
-          _GroupHeading(context.l10n.veneraEngineGroup),
-          _SectionLabel(context.l10n.veneraReaderMode),
-          _ChipRow(
-            children: [
-              for (final mode in VeneraReaderMode.values)
-                FilterChip(
-                  selected: settings.veneraReaderMode == mode,
-                  showCheckmark: false,
-                  label: Text(mode.toLocale(context)),
-                  onSelected: (_) => model.setVeneraReaderMode(mode),
-                ),
-            ],
-          ),
-          IntSliderTile(
-            title: context.l10n.veneraImagesPerPage,
-            valueLabel: '${settings.veneraImagesPerPage}',
-            value: settings.veneraImagesPerPage,
-            min: 1,
-            max: 5,
-            onChanged: model.setVeneraImagesPerPage,
-          ),
-          CompactSwitchListTile(
-            controlAffinity: ListTileControlAffinity.trailing,
-            title: Text(context.l10n.veneraSingleFirstPage),
-            value: settings.veneraSingleFirstPage,
-            onChanged: model.setVeneraSingleFirstPage,
-          ),
-          CompactSwitchListTile(
-            controlAffinity: ListTileControlAffinity.trailing,
-            title: Text(context.l10n.veneraLongPressToZoom),
-            value: settings.veneraLongPressZoom,
-            onChanged: model.setVeneraLongPressZoom,
-          ),
-          IntSliderTile(
-            title: context.l10n.veneraPageAnimationDuration,
-            valueLabel: context.l10n.veneraPageAnimationMsValue(
-              settings.veneraPageAnimationMs,
-            ),
-            value: settings.veneraPageAnimationMs,
-            min: 50,
-            max: 500,
-            onChanged: model.setVeneraPageAnimationMs,
-          ),
-        ],
+        // Reader-engine Venera group moved to the app-level Venera reader
+        // settings page; the in-reader sheet stays engine-pure.
       ],
     );
   }

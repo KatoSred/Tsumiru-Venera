@@ -13,19 +13,27 @@ import '../../../../../../utils/mixin/shared_preferences_client_mixin.dart';
 part 'venera_engine_prefs.g.dart';
 
 /// Which engine renders the reader; per-series overrides via MangaMetaKeys.
+/// Enums must use [SharedPreferenceEnumClientMixin] (index-based storage) —
+/// the plain mixin's `_set` has no enum branch and silently drops the write.
 @riverpod
 class ReaderEngineKey extends _$ReaderEngineKey
-    with SharedPreferenceClientMixin<ReaderEngine> {
+    with SharedPreferenceEnumClientMixin<ReaderEngine> {
   @override
-  ReaderEngine? build() => initialize(DBKeys.readerEngine);
+  ReaderEngine? build() => initialize(
+        DBKeys.readerEngine,
+        enumList: ReaderEngine.values,
+      );
 }
 
 /// Reading mode for the Venera engine (paged/continuous, direction).
 @riverpod
 class VeneraReaderModeSetting extends _$VeneraReaderModeSetting
-    with SharedPreferenceClientMixin<VeneraReaderMode> {
+    with SharedPreferenceEnumClientMixin<VeneraReaderMode> {
   @override
-  VeneraReaderMode? build() => initialize(DBKeys.veneraReaderMode);
+  VeneraReaderMode? build() => initialize(
+        DBKeys.veneraReaderMode,
+        enumList: VeneraReaderMode.values,
+      );
 }
 
 /// Gallery-mode images shown per screen (1-5).
