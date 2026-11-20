@@ -376,19 +376,22 @@ class _ReaderScaffoldState extends State<_ReaderScaffold> {
               return Row(
                 children: [
                   if (!small)
-                    // ADAPTER: height 24 -> 20, fontSize 11 — user feedback:
-                    // the in-bar page pill read too large.
+                    // ADAPTER: follow the app's theme primary color (user
+                    // request) instead of the fixed tertiaryContainer pink.
                     Container(
                       height: 20,
                       padding: const EdgeInsets.fromLTRB(5, 1, 5, 0),
                       decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.tertiaryContainer,
+                        color: Theme.of(context).colorScheme.primary,
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Center(
                         child: Text(
                           text,
-                          style: const TextStyle(fontSize: 11),
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Theme.of(context).colorScheme.onPrimary,
+                          ),
                         ),
                       ),
                     ).paddingLeft(16),
@@ -486,7 +489,17 @@ class _ReaderScaffoldState extends State<_ReaderScaffold> {
                 ..color = context.colorScheme.onInverseSurface,
             ),
           ),
-          Text(text, style: const TextStyle(fontSize: 12)),
+          // ADAPTER: explicit onSurface — the inherited DefaultTextStyle in
+          // this overlay resolved to a primary-colored, background-painted
+          // style (red text on yellow band), unlike the original's plain
+          // theme-colored label.
+          Text(
+            text,
+            style: TextStyle(
+              fontSize: 12,
+              color: context.colorScheme.onSurface,
+            ),
+          ),
         ],
       ),
     );
