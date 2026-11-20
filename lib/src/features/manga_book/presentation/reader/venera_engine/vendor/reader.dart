@@ -483,14 +483,19 @@ class _ReaderState extends State<Reader>
   @override
   void updateChrome() {
     // ADAPTER: re-read the live reading mode so panel changes apply in
-    // place (imagesPerPage is handled by _checkImagesPerPageChange in
-    // build; the gallery widget is keyed by mode + per-page count).
+    // place. `page` is a SCREEN index in BOTH modes and maxPage is
+    // mode-independent, so no page remapping is needed on a mode switch —
+    // the gallery PageController (initialPage) and the continuous list
+    // (initialScrollIndex) both start from the current screen page. The
+    // earlier initImagesPerPage(page) call here double-mapped the page
+    // (it expects an IMAGE index) and broke the position (user report).
     final newMode = ReaderMode.fromKey(
       getReaderSetting(cid, type.sourceKey, 'readerMode'),
     );
     if (newMode != mode) {
       mode = newMode;
-      initImagesPerPage(page);
+      _lastImagesPerPage = imagesPerPage;
+      _lastOrientation = isPortrait;
     }
     _scaffoldKey.currentState?.update();
     setState(() {});
