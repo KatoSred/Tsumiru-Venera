@@ -393,11 +393,12 @@ abstract final class ReaderSettings {
     fallback: DBKeys.invertedColors.initial as bool,
   );
 
-  // Venera engine (M4). The engine switch is per-series overridable;
-  // engine-specific knobs are global-only.
+  // Venera engine (M4). The engine switch is global-only (app-level
+  // settings); engine-specific knobs are global-only too. Per-series engine
+  // meta was removed — stale `flutter_readerEngine` metas written by early
+  // builds are ignored on purpose.
   static final readerEngine = ReaderSetting<ReaderEngine>(
-    scope: ReaderSettingScope.perSeries,
-    perSeriesKey: MangaMetaKeys.readerEngine,
+    scope: ReaderSettingScope.global,
     global: readerEngineKeyProvider,
     fallback: DBKeys.readerEngine.initial as ReaderEngine,
   );
@@ -660,7 +661,6 @@ class ReaderSettingsModel extends _$ReaderSettingsModel {
   late ReaderOrientationKey _readerOrientationKey;
   late ReaderTapInvertKey _readerTapInvertKey;
   late ReaderPaddingKey _readerPaddingKey;
-  late ReaderEngineKey _readerEngineKey;
 
   @override
   ReaderSettingsState build(int mangaId) {
@@ -756,7 +756,6 @@ class ReaderSettingsModel extends _$ReaderSettingsModel {
     _readerOrientationKey = ref.read(readerOrientationKeyProvider.notifier);
     _readerTapInvertKey = ref.read(readerTapInvertKeyProvider.notifier);
     _readerPaddingKey = ref.read(readerPaddingKeyProvider.notifier);
-    _readerEngineKey = ref.read(readerEngineKeyProvider.notifier);
     final meta =
         ref.watch(mangaWithIdProvider(mangaId: mangaId)).value?.metaData;
     return ReaderSettingsState(
@@ -852,10 +851,8 @@ class ReaderSettingsModel extends _$ReaderSettingsModel {
           ReaderSettings.colorFilterBlendMode.resolveWith(ref, null),
       grayscale: ReaderSettings.grayscale.resolveWith(ref, null),
       invertedColors: ReaderSettings.invertedColors.resolveWith(ref, null),
-      readerEngine: ReaderSettings.readerEngine.resolveWith(
-        ref,
-        meta?.readerEngine,
-      ),
+      readerEngine:
+          ReaderSettings.readerEngine.resolveWith(ref, null),
       veneraImagesPerPage:
           ReaderSettings.veneraImagesPerPage.resolveWith(ref, null),
       veneraReaderMode:
@@ -1066,14 +1063,6 @@ class ReaderSettingsModel extends _$ReaderSettingsModel {
 
   void setVeneraDoubleTapToZoom(bool value) =>
       _veneraDoubleTapToZoom.update(value);
-
-  Future<void> setReaderEngine(ReaderEngine value, {bool perSeries = true}) =>
-      perSeries
-          ? _patchMeta(MangaMetaKeys.readerEngine, value.name)
-          : _clearMetaThenWriteGlobal(
-              MangaMetaKeys.readerEngine,
-              () => _readerEngineKey.update(value),
-            );
 
   // With perSeries=false, remove the override and update the app-wide default.
 

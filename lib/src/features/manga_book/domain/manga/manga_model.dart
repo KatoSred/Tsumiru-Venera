@@ -116,8 +116,6 @@ abstract class MangaMeta with _$MangaMeta {
       fromJson: MangaMeta.fromJsonToBool,
     )
     bool? chapterSortAlphabetical,
-    // Per-series reader engine override (M4).
-    @JsonKey(name: "flutter_readerEngine") ReaderEngine? readerEngine,
   }) = _MangaMeta;
 
   static bool? fromJsonToBool(dynamic val) => val != null && val is String
@@ -198,9 +196,7 @@ enum MangaMetaKeys {
   tags("flutter_tags"),
   preferredScanlators("flutter_preferredScanlators"),
   // Keep this Tsumiru-only flag separate from the WebUI sort keys.
-  chapterSortAlphabetical("flutter_chapterSortIsAlphabetical"),
-  // Per-series reader engine override (tsumiru | venera).
-  readerEngine("flutter_readerEngine");
+  chapterSortAlphabetical("flutter_chapterSortIsAlphabetical");
 
   const MangaMetaKeys(this.key);
   final String key;
