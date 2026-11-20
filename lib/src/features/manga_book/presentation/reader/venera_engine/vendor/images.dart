@@ -1203,12 +1203,15 @@ ImageProvider _createImageProviderFromKey(
   BuildContext context,
   int page,
 ) {
+  // Adapter hook: the host (VeneraEngineScreen) injects a factory that builds
+  // providers with Tsumiru auth headers / shared cache keys / page-crop.
   // VENDOR-CUT: venera ReaderImageProvider (with sourceKey/cid/eid cache
-  // keys and enableResize) replaced by TsumiruImageProvider. M2 will align
-  // cache keys and implement page-crop/resize.
-  return TsumiruImageProvider(
-    imageKey,
-  );
+  // keys and enableResize) replaced by TsumiruImageProvider.
+  final factory = context.reader.imageProviderFactory;
+  if (factory != null) {
+    return factory(imageKey);
+  }
+  return TsumiruImageProvider(imageKey);
 }
 
 ImageProvider _createImageProvider(int page, BuildContext context) {

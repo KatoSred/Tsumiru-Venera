@@ -3,9 +3,12 @@
 //
 // Image provider adapter for Tsumiru (created 2026-11-20).
 // Replaces venera's ReaderImageProvider/BaseImageProvider for the vendored
-// reader. M1: file:// and plain HTTP(S) download with chunk events and 3
-// retries; M2 will align cache keys with Tsumiru's cache layer and implement
-// [enableCrop].
+// reader. M2: bytes flow through Tsumiru's flutter_cache_manager so both
+// reader engines share one cache (cacheKey aligned with ServerImage);
+// chunk events feed ComicImage's progress UI; decode size capped at the
+// descriptor level (replaces venera's dynamic imageCache resizing);
+// page-crop is handled by the factory returning Tsumiru's
+// CroppedImageProvider instead (see VeneraEngineScreen, M4).
 
 import 'dart:async';
 import 'dart:io';
@@ -13,73 +16,98 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
-import 'package:http/http.dart' as http;
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 
 /// Image provider for the vendored reader.
 ///
-/// [url] is an `http(s)://` or `file://` image URL; [headers] are forwarded
-/// to HTTP requests; [enableCrop] is reserved for M2 (page-crop support).
+/// [url] is an `http(s)://` or `file://` image URL. [headers] are forwarded
+/// to HTTP requests (Tsumiru auth headers — see ServerImage). [cacheKey]
+/// must match the key ServerImage would use so both engines hit the same
+/// flutter_cache_manager entry. [targetWidth]/[targetHeight] cap the decoded
+/// texture size (one dimension preserves aspect ratio).
 class TsumiruImageProvider extends ImageProvider<TsumiruImageProvider> {
   const TsumiruImageProvider(
     this.url, {
     this.headers = const {},
-    this.enableCrop = false,
+    this.cacheKey,
+    this.cacheManager,
+    this.targetWidth,
+    this.targetHeight,
+    this.maxRetries = 3,
   });
 
   final String url;
 
   final Map<String, String> headers;
 
-  final bool enableCrop;
+  /// Cache key shared with ServerImage; defaults to [url].
+  final String? cacheKey;
 
-  static const int _maxRetries = 3;
+  final CacheManager? cacheManager;
+
+  /// Display-pixel decode caps (logical × DPR); one dimension preserves
+  /// aspect ratio at the codec level.
+  final int? targetWidth;
+  final int? targetHeight;
+
+  final int maxRetries;
+
+  CacheManager get _manager => cacheManager ?? DefaultCacheManager();
+
+  String get _key => cacheKey ?? url;
 
   Future<Uint8List> _loadBytes(
     StreamController<ImageChunkEvent> chunkEvents,
   ) async {
-    Uint8List bytes;
     if (url.startsWith('file://')) {
-      final file = File(url.substring('file://'.length));
+      final file = File(Uri.parse(url).toFilePath());
       if (!await file.exists()) {
         throw StateError('Image file not found: $url');
       }
-      bytes = await file.readAsBytes();
-      chunkEvents.add(const ImageChunkEvent(
-        cumulativeBytesLoaded: 0,
-        expectedTotalBytes: null,
+      final bytes = await file.readAsBytes();
+      chunkEvents.add(ImageChunkEvent(
+        cumulativeBytesLoaded: bytes.length,
+        expectedTotalBytes: bytes.length,
       ));
-    } else {
-      var lastError = Object();
-      for (var attempt = 1; attempt <= _maxRetries; attempt++) {
-        try {
-          final response = await http.get(
-            Uri.parse(url),
-            headers: headers,
-          );
-          if (response.statusCode != 200) {
-            throw HttpException('HTTP ${response.statusCode} for $url');
+      return bytes;
+    }
+
+    var lastError = Object();
+    for (var attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        Uint8List? bytes;
+        await for (final response in _manager.getFileStream(
+          url,
+          key: _key,
+          headers: headers,
+          withProgress: true,
+        )) {
+          if (response is DownloadProgress) {
+            chunkEvents.add(ImageChunkEvent(
+              cumulativeBytesLoaded: response.downloaded,
+              expectedTotalBytes: response.totalSize,
+            ));
           }
-          bytes = response.bodyBytes;
-          final total = int.tryParse(
-            response.headers['content-length'] ?? '',
-          );
-          chunkEvents.add(ImageChunkEvent(
-            cumulativeBytesLoaded: bytes.length,
-            expectedTotalBytes: total,
-          ));
-          return bytes;
-        } catch (e) {
-          lastError = e;
-          if (attempt < _maxRetries) {
-            await Future<void>.delayed(
-              Duration(milliseconds: 300 * attempt),
-            );
+          if (response is FileInfo) {
+            bytes = await response.file.readAsBytes();
           }
         }
+        if (bytes == null || bytes.isEmpty) {
+          throw StateError('Empty response body: $url');
+        }
+        chunkEvents.add(ImageChunkEvent(
+          cumulativeBytesLoaded: bytes.length,
+          expectedTotalBytes: bytes.length,
+        ));
+        return bytes;
+      } catch (e) {
+        lastError = e;
+        if (attempt < maxRetries) {
+          await Future<void>.delayed(Duration(milliseconds: 300 * attempt));
+        }
       }
-      throw lastError;
     }
-    return bytes;
+    throw lastError;
   }
 
   Future<ui.Codec> _loadAsync(
@@ -94,7 +122,12 @@ class TsumiruImageProvider extends ImageProvider<TsumiruImageProvider> {
     }
     final buffer = await ui.ImmutableBuffer.fromUint8List(bytes);
     final descriptor = await ui.ImageDescriptor.encoded(buffer);
-    return descriptor.instantiateCodec();
+    // Cap decoded texture size here (replaces venera's global
+    // imageCache.maximumSizeBytes tuning); one dimension preserves aspect.
+    return descriptor.instantiateCodec(
+      targetWidth: targetWidth,
+      targetHeight: targetHeight,
+    );
   }
 
   @override
@@ -127,10 +160,12 @@ class TsumiruImageProvider extends ImageProvider<TsumiruImageProvider> {
   bool operator ==(Object other) =>
       other is TsumiruImageProvider &&
       other.url == url &&
-      other.enableCrop == enableCrop;
+      other._key == _key &&
+      other.targetWidth == targetWidth &&
+      other.targetHeight == targetHeight;
 
   @override
-  int get hashCode => Object.hash(url, enableCrop);
+  int get hashCode => Object.hash(url, _key, targetWidth, targetHeight);
 
   @override
   String toString() => 'TsumiruImageProvider("$url")';

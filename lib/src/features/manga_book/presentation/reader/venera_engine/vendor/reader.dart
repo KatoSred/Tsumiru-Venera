@@ -161,6 +161,10 @@ class _ReaderState extends State<Reader>
   @override
   List<String>? images;
 
+  /// Adapter hook: builds the per-page image provider (host-injected so the
+  /// vendored engine uses Tsumiru auth headers, shared cache keys and crop).
+  ImageProvider Function(String imageKey)? imageProviderFactory;
+
   /// TEMP-DEBUG(M1): injects images for the debug entry; also usable by M4
   /// as the formal data-injection hook.
   void setImagesForDebug(List<String> value) {
