@@ -483,20 +483,22 @@ class _ReaderScaffoldState extends State<_ReaderScaffold> {
             text,
             style: TextStyle(
               fontSize: 12,
+              inherit: false,
               foreground: Paint()
                 ..style = PaintingStyle.stroke
                 ..strokeWidth = 1.1
                 ..color = context.colorScheme.onInverseSurface,
             ),
           ),
-          // ADAPTER: explicit onSurface — the inherited DefaultTextStyle in
-          // this overlay resolved to a primary-colored, background-painted
-          // style (red text on yellow band), unlike the original's plain
-          // theme-colored label.
+          // ADAPTER: inherit:false — the inherited DefaultTextStyle in this
+          // overlay leaked a primary-colored background-painted style (red
+          // text on a yellow band); the original renders a plain theme-
+          // colored label with no background.
           Text(
             text,
             style: TextStyle(
               fontSize: 12,
+              inherit: false,
               color: context.colorScheme.onSurface,
             ),
           ),
