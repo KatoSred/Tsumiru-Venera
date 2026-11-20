@@ -11,6 +11,7 @@
 // M1: simplified implementations; M4/M5 may replace with branded widgets.
 
 import 'dart:async';
+import 'dart:math' as math;
 import 'dart:typed_data';
 import 'dart:ui' show ImageFilter;
 
@@ -60,31 +61,86 @@ class NetworkError extends StatelessWidget {
   }
 }
 
-/// Replaces venera's right-side sidebar. M1 uses a modal bottom sheet; the
-/// caller ignores the future value.
+/// Ported from venera components/side_bar.dart (SideBarRoute): a panel that
+/// slides in from the right edge, pushed via Navigator so its route context
+/// sits above the vendored Overlay subtree (where MaterialLocalizations is
+/// unreachable and showModalBottomSheet crashed — see crash.log 20:30).
+class _VeneraSideBarRoute<T> extends PopupRoute<T> {
+  _VeneraSideBarRoute(this.widget, {required this.width, this.dismissible = true});
+
+  final Widget widget;
+  final bool dismissible;
+  final double width;
+
+  @override
+  Color? get barrierColor => Colors.black54;
+
+  @override
+  bool get barrierDismissible => dismissible;
+
+  @override
+  String? get barrierLabel => 'exit';
+
+  @override
+  Duration get transitionDuration => const Duration(milliseconds: 220);
+
+  @override
+  Widget buildPage(
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+  ) {
+    final sideBarWidth = math.min(width, MediaQuery.of(context).size.width);
+    return Align(
+      alignment: AlignmentDirectional.centerEnd,
+      child: Container(
+        constraints: BoxConstraints(maxWidth: sideBarWidth),
+        height: MediaQuery.of(context).size.height,
+        decoration: BoxDecoration(
+          borderRadius:
+              const BorderRadius.horizontal(left: Radius.circular(16)),
+          color: Theme.of(context).colorScheme.surface,
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Material(
+          color: Theme.of(context).colorScheme.surface,
+          child: widget,
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget buildTransitions(
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget child,
+  ) {
+    return SlideTransition(
+      position: Tween<Offset>(begin: const Offset(1, 0), end: Offset.zero)
+          .animate(
+        CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
+      ),
+      child: child,
+    );
+  }
+}
+
+/// Replaces venera's right-side sidebar (original: Navigator.push of
+/// SideBarRoute). The caller ignores the future value.
 Future<void> showSideBar(
   BuildContext context,
   Widget widget, {
   double width = 400,
   bool dismissible = true,
 }) {
-  return showModalBottomSheet<void>(
-    context: context,
-    isScrollControlled: true,
-    isDismissible: dismissible,
-    enableDrag: dismissible,
-    // ADAPTER: explicit barrier label — showModalBottomSheet would otherwise
-    // read MaterialLocalizations.of(context).modalBarrierDismissLabel, which
-    // is not reachable in the vendored reader subtree.
-    barrierLabel: '关闭',
-    builder: (sheetContext) {
-      final maxHeight = MediaQuery.of(sheetContext).size.height * 0.8;
-      return SizedBox(
-        height: maxHeight,
-        width: width,
-        child: widget,
-      );
-    },
+  return Navigator.of(context).push(
+    _VeneraSideBarRoute<void>(
+      widget,
+      width: width,
+      dismissible: dismissible,
+    ),
   );
 }
 

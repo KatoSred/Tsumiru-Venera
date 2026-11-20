@@ -202,7 +202,14 @@ class _ReaderScaffoldState extends State<_ReaderScaffold> {
               Expanded(
                 child: epName == null ? Text(
                   context.reader.widget.name,
-                  style: ts.s18,
+                  // ADAPTER: inherit:false — the inherited DefaultTextStyle
+                  // in this overlay leaks a primary-colored background-
+                  // painted style (red text on yellow band).
+                  style: TextStyle(
+                    fontSize: 16,
+                    inherit: false,
+                    color: context.colorScheme.onSurface,
+                  ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ) : Column(
@@ -211,13 +218,21 @@ class _ReaderScaffoldState extends State<_ReaderScaffold> {
                   children: [
                     Text(
                       context.reader.widget.name,
-                      style: ts.s16,
+                      style: TextStyle(
+                        fontSize: 16,
+                        inherit: false,
+                        color: context.colorScheme.onSurface,
+                      ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                     Text(
                       epName,
-                      style: ts.s12,
+                      style: TextStyle(
+                        fontSize: 12,
+                        inherit: false,
+                        color: context.colorScheme.onSurfaceVariant,
+                      ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
