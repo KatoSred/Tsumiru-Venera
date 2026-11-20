@@ -56,22 +56,40 @@ class _ReaderImagesState extends State<_ReaderImages> {
     if (inProgress) return;
     inProgress = true;
     // VENDOR-CUT: original load branches (reader.type.comicSource!
-    // .loadComicPages / LocalManager().getImages) removed. M1: the image
-    // list is injected by the host (debug entry / M2 adapter).
-    final injected = reader.images;
-    if (injected != null && injected.isNotEmpty) {
-      setState(() {
-        reader.isLoading = false;
-        inProgress = false;
-        _handleJumpToLastPage();
-        Future.microtask(() {
-          reader.updateHistory();
+    // .loadComicPages / LocalManager().getImages) removed. M3: the image
+    // list comes from the host-injected per-chapter loader (Tsumiru
+    // chapterPagesProvider underneath); falling back to injected
+    // debugImages keeps the M1 debug entry usable.
+    try {
+      List<String>? pages;
+      final loader = reader.chapterPagesLoader;
+      if (loader != null) {
+        pages = await loader(reader.chapter - 1);
+      } else {
+        pages = reader.images;
+      }
+      if (pages != null && pages.isNotEmpty) {
+        reader.images = pages;
+        reader._progressActive = true;
+        setState(() {
+          reader.isLoading = false;
+          inProgress = false;
+          _handleJumpToLastPage();
+          Future.microtask(() {
+            reader.syncHistoryState();
+          });
         });
-      });
-    } else {
+      } else {
+        setState(() {
+          error = "No images provided to the vendored reader (host loader "
+              "returned nothing).";
+          reader.isLoading = false;
+          inProgress = false;
+        });
+      }
+    } catch (e) {
       setState(() {
-        error = "No images provided to the vendored reader (M1 debug entry "
-            "must inject an image list).";
+        error = e.toString();
         reader.isLoading = false;
         inProgress = false;
       });

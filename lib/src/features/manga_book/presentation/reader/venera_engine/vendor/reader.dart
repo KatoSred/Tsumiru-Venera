@@ -165,6 +165,14 @@ class _ReaderState extends State<Reader>
   /// vendored engine uses Tsumiru auth headers, shared cache keys and crop).
   ImageProvider Function(String imageKey)? imageProviderFactory;
 
+  /// Adapter hook: loads the image URL list for a chapter (0-based index).
+  /// Enables Venera-native chapter switching; null = static [debugImages].
+  Future<List<String>> Function(int chapterIndex)? chapterPagesLoader;
+
+  /// Progress emits are gated until the first chapter finishes loading, so
+  /// restoring a position (especially openAtEnd) never records progress.
+  bool _progressActive = false;
+
   /// TEMP-DEBUG(M1): injects images for the debug entry; also usable by M4
   /// as the formal data-injection hook.
   void setImagesForDebug(List<String> value) {
@@ -262,6 +270,7 @@ class _ReaderState extends State<Reader>
     focusNode.dispose();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     stopVolumeEvent();
+    flushPendingProgress();
     // VENDOR-CUT: SuwayomiProgressSync.instance.flush(),
     // DataSync().onDataChanged() and imageCache.maximumSizeBytes reset
     // removed — replaced by the _progressSink bridge (M3).
@@ -311,50 +320,88 @@ class _ReaderState extends State<Reader>
   Timer? _updateHistoryTimer;
 
   void updateHistory() {
-    if (history != null) {
-      if (page >= maxPage) {
-        /// Record the last image of chapter
-        history!.page = images?.length ?? 1;
-      } else {
-        /// Record the first image of the page
-        if (!showSingleImageOnFirstPage() || imagesPerPage == 1) {
-          history!.page = (page - 1) * imagesPerPage + 1;
-        } else {
-          if (page == 1) {
-            history!.page = 1;
-          } else {
-            history!.page = (page - 2) * imagesPerPage + 2;
-          }
-        }
-      }
-      history!.maxPage = images?.length ?? 1;
-      if (widget.chapters?.isGrouped ?? false) {
-        int g = 0;
-        int c = chapter;
-        while (c > widget.chapters!.getGroupByIndex(g).length) {
-          c -= widget.chapters!.getGroupByIndex(g).length;
-          g++;
-        }
-        history!.readEpisode.add('${g + 1}-$c');
-        history!.ep = c;
-        history!.group = g + 1;
-      } else {
-        history!.readEpisode.add(chapter.toString());
-        history!.ep = chapter;
-      }
-      history!.time = DateTime.now();
-      // VENDOR-CUT: HistoryManager().addHistoryAsync / SuwayomiProgressSync
-      // / DataSync writes removed. Page math above is kept (needed by M3);
-      // progress is forwarded to the Tsumiru bridge instead.
+    if (history == null) return;
+    // VENDOR-CUT: HistoryManager().addHistoryAsync / SuwayomiProgressSync
+    // / DataSync writes removed. Page math is kept; progress is forwarded
+    // to the Tsumiru bridge instead (M3).
+    _updateHistoryState();
+    if (!_progressActive) return;
+    final isFinished = page >= maxPage;
+    if (isFinished) {
+      // Last page: record immediately, never debounced (Tsumiru semantics —
+      // an entire chapter must not linger unread if the app exits right now).
+      _updateHistoryTimer?.cancel();
+      _updateHistoryTimer = null;
+      _emitProgress();
+    } else {
       _updateHistoryTimer?.cancel();
       _updateHistoryTimer = Timer(const Duration(seconds: 1), () {
-        _progressSink?.onPageChanged(
-          history!.page,
-          maxPage: history!.maxPage,
-          imageCount: images?.length ?? 1,
-        );
         _updateHistoryTimer = null;
+        _emitProgress();
       });
+    }
+  }
+
+  /// Updates the [history] state (page math / episode tracking) WITHOUT
+  /// emitting progress — used for position restores (initial page,
+  /// openAtEnd, chapter reloads) so glancing at a page never records it.
+  void syncHistoryState() {
+    if (history != null) {
+      _updateHistoryState();
+    }
+  }
+
+  void _updateHistoryState() {
+    if (page >= maxPage) {
+      /// Record the last image of chapter
+      history!.page = images?.length ?? 1;
+    } else {
+      /// Record the first image of the page
+      if (!showSingleImageOnFirstPage() || imagesPerPage == 1) {
+        history!.page = (page - 1) * imagesPerPage + 1;
+      } else {
+        if (page == 1) {
+          history!.page = 1;
+        } else {
+          history!.page = (page - 2) * imagesPerPage + 2;
+        }
+      }
+    }
+    history!.maxPage = images?.length ?? 1;
+    if (widget.chapters?.isGrouped ?? false) {
+      int g = 0;
+      int c = chapter;
+      while (c > widget.chapters!.getGroupByIndex(g).length) {
+        c -= widget.chapters!.getGroupByIndex(g).length;
+        g++;
+      }
+      history!.readEpisode.add('${g + 1}-$c');
+      history!.ep = c;
+      history!.group = g + 1;
+    } else {
+      history!.readEpisode.add(chapter.toString());
+      history!.ep = chapter;
+    }
+    history!.time = DateTime.now();
+  }
+
+  void _emitProgress() {
+    _progressSink?.onPageChanged(
+      history!.page,
+      maxPage: history!.maxPage,
+      imageCount: images?.length ?? 1,
+      chapter: chapter,
+      isFinished: page >= maxPage,
+    );
+  }
+
+  /// Flush any pending debounced progress immediately (chapter switch, pop,
+  /// app lifecycle). Safe to call when nothing is pending.
+  void flushPendingProgress() {
+    if (_updateHistoryTimer != null) {
+      _updateHistoryTimer!.cancel();
+      _updateHistoryTimer = null;
+      _emitProgress();
     }
   }
 
@@ -659,6 +706,9 @@ abstract mixin class _ReaderLocation {
 
   bool toChapter(int c, {bool toLastPage = false}) {
     if (_validateChapter(c) && !isLoading) {
+      // Emit the old chapter's pending progress before switching, so it is
+      // recorded against the correct chapter (the sink carries the chapter).
+      flushPendingProgress();
       chapter = c;
       page = 1;
       _jumpToLastPageOnLoad = toLastPage;
@@ -669,6 +719,9 @@ abstract mixin class _ReaderLocation {
   }
 
   Timer? autoPageTurningTimer;
+
+  /// Implemented by [_ReaderState]: emits pending progress immediately.
+  void flushPendingProgress();
 
   void autoPageTurning(String cid, ComicType type) {
     if (autoPageTurningTimer != null) {
