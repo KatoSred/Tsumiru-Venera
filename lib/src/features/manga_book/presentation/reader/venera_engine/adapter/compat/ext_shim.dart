@@ -9,7 +9,7 @@
 // the vendored reader. M1: `.tl` returns the source string (English text);
 // M4 may add a translation table.
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Translation extension (venera `.tl`). Vendored UI strings are authored in
 /// English; map the reader's user-facing strings to Simplified Chinese and

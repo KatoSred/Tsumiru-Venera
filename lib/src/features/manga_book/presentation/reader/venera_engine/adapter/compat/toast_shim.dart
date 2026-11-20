@@ -8,7 +8,7 @@
 // Minimal replacement for `venera/components/message.dart` showToast.
 // M1: renders a plain SnackBar; M4 may rewire to Tsumiru's toast system.
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 void showToast({
   required String message,
