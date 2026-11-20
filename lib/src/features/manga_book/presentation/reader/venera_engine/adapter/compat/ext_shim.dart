@@ -11,9 +11,33 @@
 
 import 'package:flutter/material.dart';
 
-/// Translation extension (venera `.tl`). M1: identity mapping.
+/// Translation extension (venera `.tl`). Vendored UI strings are authored in
+/// English; map the reader's user-facing strings to Simplified Chinese and
+/// pass anything unknown through unchanged.
 extension VeneraTranslationExt on String {
-  String get tl => this;
+  static const Map<String, String> _zh = {
+    'Settings': '设置',
+    'Reader Settings': '阅读设置',
+    'Full Screen': '全屏',
+    'Fullscreen': '全屏',
+    'Screen Rotation': '屏幕旋转',
+    'Auto Page Turning': '自动翻页',
+    'Chapters': '章节',
+    'Save Image': '保存图片',
+    'Share': '分享',
+    'Retry': '重试',
+    'Exit': '退出',
+    'Ascending': '升序',
+    'Descending': '降序',
+    'Click to change the order': '点击切换排序',
+    'Swipe down for previous chapter': '下滑进入上一章',
+    'Swipe up for next chapter': '上滑进入下一章',
+    'Copied to clipboard': '已复制到剪贴板',
+    'Saved to': '已保存到',
+    'Failed to save': '保存失败',
+  };
+
+  String get tl => _zh[this] ?? this;
 }
 
 /// Text style helpers mirroring venera's `ts` object.

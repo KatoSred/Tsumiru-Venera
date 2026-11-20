@@ -73,6 +73,10 @@ Future<void> showSideBar(
     isScrollControlled: true,
     isDismissible: dismissible,
     enableDrag: dismissible,
+    // ADAPTER: explicit barrier label — showModalBottomSheet would otherwise
+    // read MaterialLocalizations.of(context).modalBarrierDismissLabel, which
+    // is not reachable in the vendored reader subtree.
+    barrierLabel: '关闭',
     builder: (sheetContext) {
       final maxHeight = MediaQuery.of(sheetContext).size.height * 0.8;
       return SizedBox(

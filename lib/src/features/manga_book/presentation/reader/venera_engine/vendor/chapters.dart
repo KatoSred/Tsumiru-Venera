@@ -151,7 +151,12 @@ class _GroupedChaptersViewState extends State<_GroupedChaptersView>
     // material widgets.
     return Column(
       children: [
-        AppBar(title: Text("Chapters".tl)),
+        // ADAPTER: no implicit leading — AppBar's auto BackButton needs
+        // MaterialLocalizations, unavailable in this subtree.
+        AppBar(
+          automaticallyImplyLeading: false,
+          title: Text("Chapters".tl),
+        ),
         TabBar(
           controller: tabController,
           tabs: chapters.groups.keys.map((e) => Tab(text: e)).toList(),

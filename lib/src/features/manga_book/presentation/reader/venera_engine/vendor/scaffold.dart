@@ -185,7 +185,15 @@ class _ReaderScaffoldState extends State<_ReaderScaffold> {
           child: Row(
             children: [
               const SizedBox(width: 8),
-              const BackButton(),
+              // ADAPTER: plain IconButton instead of BackButton —
+              // BackButton requires MaterialLocalizations, which is not
+              // reachable in this subtree (crash.log _TypeError at
+              // MaterialLocalizations.of); the icon + Navigator.pop needs
+              // nothing from it.
+              IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () => Navigator.of(context).maybePop(),
+              ),
               const SizedBox(width: 8),
               Expanded(
                 child: epName == null ? Text(
@@ -450,8 +458,12 @@ class _ReaderScaffoldState extends State<_ReaderScaffold> {
         ? "$epName : $pageText"
         : pageText;
 
-    return Positioned(
-      bottom: 13,
+    // ADAPTER: slide the badge above the bottom bar when the controls are
+    // open — the original venera leaves it at bottom:13 where it ghosts
+    // through the translucent bar (user-reported as clipped/abnormal).
+    return AnimatedPositioned(
+      duration: const Duration(milliseconds: 180),
+      bottom: _isOpen ? kBottomBarHeight + 13 : 13,
       left: 25,
       child: Stack(
         children: [
