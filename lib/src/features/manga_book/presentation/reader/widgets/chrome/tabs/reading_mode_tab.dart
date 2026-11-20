@@ -162,6 +162,18 @@ class ReadingModeTab extends ConsumerWidget {
         // the vendored engine; Tsumiru-native settings above stay untouched.
         if (settings.readerEngine == ReaderEngine.venera) ...[
           _GroupHeading(context.l10n.veneraEngineGroup),
+          _SectionLabel(context.l10n.veneraReaderMode),
+          _ChipRow(
+            children: [
+              for (final mode in VeneraReaderMode.values)
+                FilterChip(
+                  selected: settings.veneraReaderMode == mode,
+                  showCheckmark: false,
+                  label: Text(mode.toLocale(context)),
+                  onSelected: (_) => model.setVeneraReaderMode(mode),
+                ),
+            ],
+          ),
           IntSliderTile(
             title: context.l10n.veneraImagesPerPage,
             valueLabel: '${settings.veneraImagesPerPage}',
@@ -172,9 +184,9 @@ class ReadingModeTab extends ConsumerWidget {
           ),
           CompactSwitchListTile(
             controlAffinity: ListTileControlAffinity.trailing,
-            title: Text(context.l10n.veneraContinuousModeDefault),
-            value: settings.veneraContinuousDefault,
-            onChanged: model.setVeneraContinuousDefault,
+            title: Text(context.l10n.veneraSingleFirstPage),
+            value: settings.veneraSingleFirstPage,
+            onChanged: model.setVeneraSingleFirstPage,
           ),
           CompactSwitchListTile(
             controlAffinity: ListTileControlAffinity.trailing,

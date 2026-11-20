@@ -624,3 +624,44 @@ enum ReaderEngine {
   tsumiru,
   venera;
 }
+
+/// Reading mode for the vendored Venera engine. Keys match the vendored
+/// `ReaderMode.fromKey` strings (venera_engine/vendor/reader.dart).
+enum VeneraReaderMode {
+  galleryLeftToRight('galleryLeftToRight'),
+  galleryRightToLeft('galleryRightToLeft'),
+  galleryTopToBottom('galleryTopToBottom'),
+  continuousTopToBottom('continuousTopToBottom'),
+  continuousLeftToRight('continuousLeftToRight'),
+  continuousRightToLeft('continuousRightToLeft');
+
+  final String key;
+
+  const VeneraReaderMode(this.key);
+
+  bool get isGallery => key.startsWith('gallery');
+
+  bool get isContinuous => key.startsWith('continuous');
+
+  static VeneraReaderMode fromKey(String key) => values.firstWhere(
+        (mode) => mode.key == key,
+        orElse: () => continuousTopToBottom,
+      );
+}
+
+extension VeneraReaderModeLoc on VeneraReaderMode {
+  String toLocale(BuildContext context) => switch (this) {
+        VeneraReaderMode.galleryLeftToRight =>
+          context.l10n.veneraModeGalleryLtr,
+        VeneraReaderMode.galleryRightToLeft =>
+          context.l10n.veneraModeGalleryRtl,
+        VeneraReaderMode.galleryTopToBottom =>
+          context.l10n.veneraModeGalleryTtb,
+        VeneraReaderMode.continuousTopToBottom =>
+          context.l10n.veneraModeContinuousTtb,
+        VeneraReaderMode.continuousLeftToRight =>
+          context.l10n.veneraModeContinuousLtr,
+        VeneraReaderMode.continuousRightToLeft =>
+          context.l10n.veneraModeContinuousRtl,
+      };
+}

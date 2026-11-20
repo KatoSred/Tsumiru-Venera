@@ -85,10 +85,8 @@ class VeneraEngineScreen extends HookConsumerWidget {
     // `readerScrollSpeed` carries veneraWheelSensitivity so the wheel slider
     // reaches the vendored continuous-mode scroll handler.
     VeneraSettingsBridge.instance.snapshot = {
-      'readerMode': settings.veneraContinuousDefault
-          ? 'continuousTopToBottom'
-          : 'galleryRightToLeft',
-      'showSingleImageOnFirstPage': false,
+      'readerMode': settings.veneraReaderMode.key,
+      'showSingleImageOnFirstPage': settings.veneraSingleFirstPage,
       'readerScreenPicNumberForPortrait':
           settings.veneraImagesPerPage.clamp(1, 5),
       'readerScreenPicNumberForLandscape':

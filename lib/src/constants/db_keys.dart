@@ -261,10 +261,12 @@ enum DBKeys {
   invertedColors(false),
   // Venera engine (M4): which reader engine renders the reader.
   readerEngine(ReaderEngine.tsumiru),
+  // Venera engine reading mode (paged LTR/RTL/TTB, continuous TTB/LTR/RTL).
+  veneraReaderMode(VeneraReaderMode.continuousTopToBottom),
   // Gallery-mode images shown per screen (1-5).
   veneraImagesPerPage(1),
-  // Continuous vs gallery when the Venera engine opens a series.
-  veneraContinuousDefault(true),
+  // When >1 image per screen, show a single image on the first page.
+  veneraSingleFirstPage(false),
   // Long-press zooms the current page.
   veneraLongPressZoom(true),
   // Page-turn animation duration in milliseconds.

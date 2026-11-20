@@ -20,6 +20,14 @@ class ReaderEngineKey extends _$ReaderEngineKey
   ReaderEngine? build() => initialize(DBKeys.readerEngine);
 }
 
+/// Reading mode for the Venera engine (paged/continuous, direction).
+@riverpod
+class VeneraReaderModeSetting extends _$VeneraReaderModeSetting
+    with SharedPreferenceClientMixin<VeneraReaderMode> {
+  @override
+  VeneraReaderMode? build() => initialize(DBKeys.veneraReaderMode);
+}
+
 /// Gallery-mode images shown per screen (1-5).
 @riverpod
 class VeneraImagesPerPage extends _$VeneraImagesPerPage
@@ -28,12 +36,12 @@ class VeneraImagesPerPage extends _$VeneraImagesPerPage
   int? build() => initialize(DBKeys.veneraImagesPerPage);
 }
 
-/// Continuous vs gallery default for the Venera engine.
+/// When >1 image per screen, show a single image on the first page.
 @riverpod
-class VeneraContinuousDefault extends _$VeneraContinuousDefault
+class VeneraSingleFirstPage extends _$VeneraSingleFirstPage
     with SharedPreferenceClientMixin<bool> {
   @override
-  bool? build() => initialize(DBKeys.veneraContinuousDefault);
+  bool? build() => initialize(DBKeys.veneraSingleFirstPage);
 }
 
 /// Long-press zooms the current page.

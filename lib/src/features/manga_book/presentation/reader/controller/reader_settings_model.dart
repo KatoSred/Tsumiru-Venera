@@ -408,10 +408,16 @@ abstract final class ReaderSettings {
     fallback: DBKeys.veneraImagesPerPage.initial as int,
   );
 
-  static final veneraContinuousDefault = ReaderSetting<bool>(
+  static final veneraReaderMode = ReaderSetting<VeneraReaderMode>(
     scope: ReaderSettingScope.global,
-    global: veneraContinuousDefaultProvider,
-    fallback: DBKeys.veneraContinuousDefault.initial as bool,
+    global: veneraReaderModeSettingProvider,
+    fallback: DBKeys.veneraReaderMode.initial as VeneraReaderMode,
+  );
+
+  static final veneraSingleFirstPage = ReaderSetting<bool>(
+    scope: ReaderSettingScope.global,
+    global: veneraSingleFirstPageProvider,
+    fallback: DBKeys.veneraSingleFirstPage.initial as bool,
   );
 
   static final veneraLongPressZoom = ReaderSetting<bool>(
@@ -503,7 +509,8 @@ abstract class ReaderSettingsState with _$ReaderSettingsState {
     required bool invertedColors,
     required ReaderEngine readerEngine,
     required int veneraImagesPerPage,
-    required bool veneraContinuousDefault,
+    required VeneraReaderMode veneraReaderMode,
+    required bool veneraSingleFirstPage,
     required bool veneraLongPressZoom,
     required int veneraPageAnimationMs,
     required bool veneraPageTurnVolumeKey,
@@ -569,7 +576,8 @@ class ReaderSettingsModel extends _$ReaderSettingsModel {
   late InvertedColors _invertedColors;
   // Venera engine (M4).
   late VeneraImagesPerPage _veneraImagesPerPage;
-  late VeneraContinuousDefault _veneraContinuousDefault;
+  late VeneraReaderModeSetting _veneraReaderMode;
+  late VeneraSingleFirstPage _veneraSingleFirstPage;
   late VeneraLongPressZoom _veneraLongPressZoom;
   late VeneraPageAnimationMs _veneraPageAnimationMs;
   late VeneraPageTurnVolumeKey _veneraPageTurnVolumeKey;
@@ -645,8 +653,8 @@ class ReaderSettingsModel extends _$ReaderSettingsModel {
     _grayscale = ref.read(grayscaleProvider.notifier);
     _invertedColors = ref.read(invertedColorsProvider.notifier);
     _veneraImagesPerPage = ref.read(veneraImagesPerPageProvider.notifier);
-    _veneraContinuousDefault =
-        ref.read(veneraContinuousDefaultProvider.notifier);
+    _veneraReaderMode = ref.read(veneraReaderModeSettingProvider.notifier);
+    _veneraSingleFirstPage = ref.read(veneraSingleFirstPageProvider.notifier);
     _veneraLongPressZoom = ref.read(veneraLongPressZoomProvider.notifier);
     _veneraPageAnimationMs =
         ref.read(veneraPageAnimationMsProvider.notifier);
@@ -761,8 +769,10 @@ class ReaderSettingsModel extends _$ReaderSettingsModel {
       ),
       veneraImagesPerPage:
           ReaderSettings.veneraImagesPerPage.resolveWith(ref, null),
-      veneraContinuousDefault:
-          ReaderSettings.veneraContinuousDefault.resolveWith(ref, null),
+      veneraReaderMode:
+          ReaderSettings.veneraReaderMode.resolveWith(ref, null),
+      veneraSingleFirstPage:
+          ReaderSettings.veneraSingleFirstPage.resolveWith(ref, null),
       veneraLongPressZoom:
           ReaderSettings.veneraLongPressZoom.resolveWith(ref, null),
       veneraPageAnimationMs:
@@ -905,8 +915,11 @@ class ReaderSettingsModel extends _$ReaderSettingsModel {
   void setVeneraImagesPerPage(int value) =>
       _veneraImagesPerPage.update(value.clamp(1, 5));
 
-  void setVeneraContinuousDefault(bool value) =>
-      _veneraContinuousDefault.update(value);
+  void setVeneraReaderMode(VeneraReaderMode value) =>
+      _veneraReaderMode.update(value);
+
+  void setVeneraSingleFirstPage(bool value) =>
+      _veneraSingleFirstPage.update(value);
 
   void setVeneraLongPressZoom(bool value) =>
       _veneraLongPressZoom.update(value);

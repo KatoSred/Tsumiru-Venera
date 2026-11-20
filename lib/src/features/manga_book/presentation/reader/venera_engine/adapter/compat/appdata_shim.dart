@@ -16,7 +16,7 @@
 /// call sites inside `vendor/`. The bridge snapshot only overrides keys the
 /// host maps; every key still resolves when missing from the snapshot.
 const Map<String, Object> kVeneraReaderDefaultSettings = {
-  'readerMode': 'galleryLeftToRight',
+  'readerMode': 'continuousTopToBottom',
   'showSingleImageOnFirstPage': false,
   'readerScreenPicNumberForPortrait': 1,
   'readerScreenPicNumberForLandscape': 1,
