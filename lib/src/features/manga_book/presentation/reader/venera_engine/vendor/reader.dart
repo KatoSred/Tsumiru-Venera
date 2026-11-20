@@ -47,12 +47,22 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:window_manager/window_manager.dart';
+
+// M5 reskin: the BrandPageSeekBar and BrandColors are imported directly —
+// both are plain flutter/material + ThemeExtension code with no riverpod
+// dependency. NOTE: brand.dart's `readerNavSurface` helper takes material_ui's
+// own ColorScheme type, which is incompatible with the vendor's flutter
+// ColorScheme; vendor code re-implements that one-line formula locally
+// (see scaffold.dart _readerNavSurface) instead of importing material_ui.
+import '../../../../../../utils/theme/brand.dart';
+import '../../widgets/brand_page_seekbar.dart';
 
 // Compat shims bridging vendored code to Tsumiru's environment.
 import '../adapter/compat/app_shim.dart';

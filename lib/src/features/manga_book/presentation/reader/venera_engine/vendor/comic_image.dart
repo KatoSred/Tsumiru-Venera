@@ -7,6 +7,9 @@
 //    lookup removed from the retry button (the venera GlobalState registry
 //    is not vendored); "Retry".tl comes from the ext shim. Body otherwise
 //    unchanged.
+//  - M5 reskin: loading ring is a thin primary arc on a
+//    surfaceContainerHigh track; the retry action uses a FluentIcons
+//    clockwise arrow in colorScheme.primary (Tsumiru action styling).
 
 part of 'reader.dart';
 
@@ -329,9 +332,26 @@ class _ComicImageState extends State<ComicImage> with WidgetsBindingObserver {
                       width: 84,
                       height: 36,
                       child: Center(
-                        child: Text(
-                          "Retry".tl,
-                          style: TextStyle(color: Colors.blue),
+                        // Tsumiru action styling: primary accent + icon, no
+                        // ripple (Listener-driven, unchanged interaction).
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              FluentIcons.arrow_clockwise_24_regular,
+                              size: 18,
+                              color: context.colorScheme.primary,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              "Retry".tl,
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: context.colorScheme.primary,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
@@ -426,9 +446,12 @@ class _ComicImageState extends State<ComicImage> with WidgetsBindingObserver {
             child: SizedBox(
               width: 24,
               height: 24,
+              // M5: thin primary arc on a surfaceContainerHigh track, matching
+              // Tsumiru's loading treatment.
               child: CircularProgressIndicator(
-                strokeWidth: 3,
-                backgroundColor: context.colorScheme.surfaceContainer,
+                strokeWidth: 2.5,
+                color: context.colorScheme.primary,
+                backgroundColor: context.colorScheme.surfaceContainerHigh,
                 value: (_loadingProgress != null &&
                         _loadingProgress!.expectedTotalBytes != null &&
                         _loadingProgress!.expectedTotalBytes! != 0)
