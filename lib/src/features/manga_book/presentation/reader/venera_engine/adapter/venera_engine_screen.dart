@@ -192,14 +192,11 @@ class VeneraEngineScreen extends HookConsumerWidget {
     final controllerRef = useRef<VeneraReaderController?>(null);
     final toast = ref.watch(toastProvider);
 
-    // ADAPTER(M4): live-apply host settings — any settings change rebuilds
-    // the model; after the frame, the vendored chrome re-reads the fresh
-    // snapshot via the controller (panel toggles apply without re-entering).
-    ref.listen(readerSettingsModelProvider(mangaId), (_, __) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        controllerRef.value?.updateChrome();
-      });
-    });
+    // ADAPTER(M4): apply live settings to the vendored reader state BEFORE
+    // the subtree rebuilds — a reading-mode switch then mounts the new view
+    // directly at the remapped page (a postFrame remap mounted it stale
+    // first: page number and content diverged — user report).
+    controllerRef.value?.syncLiveSettings();
 
     Future<void> recordProgress(
       int page, {

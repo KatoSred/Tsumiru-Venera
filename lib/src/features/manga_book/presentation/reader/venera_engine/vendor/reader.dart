@@ -177,9 +177,12 @@ abstract interface class VeneraReaderController {
   /// Replaces the current image list (debug/adapter entry).
   void injectImages(List<String> pages);
 
-  /// ADAPTER(M4): rebuilds the reader chrome so host-side setting changes
-  /// (settings panel toggles) apply without leaving the reader.
-  void updateChrome();
+  /// ADAPTER(M4): re-reads live settings and remaps the current page for a
+  /// reading-mode change. Called by the host screen during its build —
+  /// BEFORE the reader subtree rebuilds — so a mode switch mounts the new
+  /// view directly at the corrected page (a postFrame remap mounted the new
+  /// view stale first and the page fix never repositioned it).
+  void syncLiveSettings();
 }
 
 class _ReaderState extends State<Reader>
@@ -481,50 +484,50 @@ class _ReaderState extends State<Reader>
       GlobalKey<_ReaderScaffoldState>();
 
   @override
-  void updateChrome() {
-    // ADAPTER: re-read the live reading mode so panel changes apply in
-    // place. The two modes have DIFFERENT page semantics — gallery pages
-    // group `imagesPerPage` images per screen (maxPage = ceil(N/per)) while
+  void syncLiveSettings() {
+    // Re-read the live reading mode and remap the page if it changed. The
+    // two modes have DIFFERENT page semantics — gallery pages group
+    // `imagesPerPage` images per screen (maxPage = ceil(N/per)) while
     // continuous pages hold exactly one image (maxPage = N) — so convert
     // the current page to an image index under the OLD mode, then back to
     // a page under the NEW mode (same math as _updateHistoryState).
+    // Per-page-count-only changes are handled by _checkImagesPerPageChange
+    // in build.
     final newMode = ReaderMode.fromKey(
       getReaderSetting(cid, type.sourceKey, 'readerMode'),
     );
-    if (newMode != mode) {
-      final oldPer = imagesPerPage;
-      final singleFirst = showSingleImageOnFirstPage();
-      int imageIndex;
-      if (mode.isGallery) {
-        if (!singleFirst || oldPer == 1) {
-          imageIndex = (page - 1) * oldPer + 1;
-        } else if (page <= 1) {
-          imageIndex = 1;
-        } else {
-          imageIndex = (page - 2) * oldPer + 2;
-        }
-      } else {
-        imageIndex = page;
-      }
-
-      mode = newMode;
-      final newPer = imagesPerPage;
-      final newSingleFirst = showSingleImageOnFirstPage();
-      if (!mode.isGallery) {
-        page = imageIndex;
-      } else if (!newSingleFirst || newPer == 1) {
-        page = ((imageIndex - 1) ~/ newPer) + 1;
-      } else if (imageIndex <= 1) {
-        page = 1;
-      } else {
-        page = ((imageIndex - 2) ~/ newPer) + 2;
-      }
-      page = page.clamp(1, maxPage);
-      _lastImagesPerPage = newPer;
-      _lastOrientation = isPortrait;
+    if (newMode == mode) {
+      return;
     }
-    _scaffoldKey.currentState?.update();
-    setState(() {});
+    final singleFirst = showSingleImageOnFirstPage();
+    int imageIndex;
+    if (mode.isGallery) {
+      final oldPer = imagesPerPage;
+      if (!singleFirst || oldPer == 1) {
+        imageIndex = (page - 1) * oldPer + 1;
+      } else if (page <= 1) {
+        imageIndex = 1;
+      } else {
+        imageIndex = (page - 2) * oldPer + 2;
+      }
+    } else {
+      imageIndex = page;
+    }
+
+    mode = newMode;
+    final newPer = imagesPerPage;
+    if (!mode.isGallery) {
+      page = imageIndex;
+    } else if (!singleFirst || newPer == 1) {
+      page = ((imageIndex - 1) ~/ newPer) + 1;
+    } else if (imageIndex <= 1) {
+      page = 1;
+    } else {
+      page = ((imageIndex - 2) ~/ newPer) + 2;
+    }
+    page = page.clamp(1, maxPage);
+    _lastImagesPerPage = newPer;
+    _lastOrientation = isPortrait;
   }
 
   bool get isFirstChapterOfGroup {
