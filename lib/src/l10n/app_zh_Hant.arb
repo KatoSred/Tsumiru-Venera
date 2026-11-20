@@ -3385,5 +3385,20 @@
   "veneraPageAnimationDuration": "翻頁動畫時長",
   "veneraPageAnimationMsValue": "{ms} 毫秒",
   "veneraPageTurnVolumeKey": "音量鍵翻頁",
-  "veneraWheelSensitivity": "滾輪滾動靈敏度"
+  "veneraWheelSensitivity": "滾輪滾動靈敏度",
+  "veneraReaderSettingsTitle": "Venera 閱讀器",
+  "veneraGroupReadingMode": "閱讀模式",
+  "veneraGroupGestures": "手勢",
+  "veneraGroupDisplay": "顯示",
+  "veneraGroupBehavior": "行為",
+  "veneraTapToTurnPages": "點擊翻頁",
+  "veneraReverseTapToTurnPages": "反轉點擊區域",
+  "veneraLimitImageWidth": "限制圖片寬度",
+  "veneraPreloadImageCount": "預載頁數",
+  "veneraShowPageNumber": "顯示頁碼",
+  "veneraShowSystemStatusBar": "顯示系統狀態列",
+  "veneraEnablePageAnimation": "翻頁動畫",
+  "veneraAutoPageTurningInterval": "自動翻頁間隔",
+  "veneraAutoPageTurningSecondsValue": "{n} 秒",
+  "veneraDoubleTapToZoom": "雙擊縮放"
 }

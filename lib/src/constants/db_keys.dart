@@ -274,7 +274,25 @@ enum DBKeys {
   // Hardware volume keys turn pages (Android).
   veneraPageTurnVolumeKey(false),
   // Continuous-mode wheel scroll multiplier.
-  veneraWheelSensitivity(1.0);
+  veneraWheelSensitivity(1.0),
+  // Tap edges turn pages.
+  veneraTapToTurnPages(true),
+  // Swap left/right tap-to-turn zones.
+  veneraReverseTapToTurnPages(false),
+  // Cap image width in continuous modes.
+  veneraLimitImageWidth(true),
+  // Pages preloaded ahead of the viewport.
+  veneraPreloadImageCount(4),
+  // Show page number overlay.
+  veneraShowPageNumber(true),
+  // Page-turn animation toggle.
+  veneraEnablePageAnimation(true),
+  // Auto page turning interval in seconds.
+  veneraAutoPageTurningInterval(5),
+  // Show the system status bar over the reader.
+  veneraShowSystemStatusBar(false),
+  // Double-tap toggles zoom.
+  veneraDoubleTapToZoom(true);
 
   const DBKeys(this.initial);
 

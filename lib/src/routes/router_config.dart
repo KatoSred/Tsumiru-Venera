@@ -54,6 +54,7 @@ import '../features/settings/presentation/library/library_settings_screen.dart';
 import '../features/settings/presentation/more/more_screen.dart';
 import '../features/settings/presentation/notifications/notifications_settings_screen.dart';
 import '../features/settings/presentation/reader/reader_settings_screen.dart';
+import '../features/settings/presentation/reader/venera_reader_settings_screen.dart';
 import '../features/settings/presentation/reader/widgets/reader_general_prefs/reader_general_prefs.dart';
 import '../features/settings/presentation/server/server_database_screen.dart';
 import '../features/settings/presentation/server/server_images_screen.dart';
@@ -123,6 +124,7 @@ abstract class Routes {
   static const browseSettings = 'browse';
   static const extensionStoreSettings = 'extension-store';
   static const readerSettings = 'reader';
+  static const veneraReaderSettings = 'venera-reader';
   static const appearanceSettings = 'appearance';
   static const generalSettings = 'general';
   static const backup = 'backup';
@@ -332,6 +334,9 @@ GoRouter routerConfig(Ref ref) {
                         ),
                         TypedGoRoute<ReaderSettingsRoute>(
                           path: Routes.readerSettings,
+                        ),
+                        TypedGoRoute<VeneraReaderSettingsRoute>(
+                          path: Routes.veneraReaderSettings,
                         ),
                         TypedGoRoute<AppearanceSettingsRoute>(
                           path: Routes.appearanceSettings,

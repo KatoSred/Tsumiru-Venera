@@ -443,6 +443,60 @@ abstract final class ReaderSettings {
     global: veneraWheelSensitivityProvider,
     fallback: DBKeys.veneraWheelSensitivity.initial as double,
   );
+
+  static final veneraTapToTurnPages = ReaderSetting<bool>(
+    scope: ReaderSettingScope.global,
+    global: veneraTapToTurnPagesProvider,
+    fallback: DBKeys.veneraTapToTurnPages.initial as bool,
+  );
+
+  static final veneraReverseTapToTurnPages = ReaderSetting<bool>(
+    scope: ReaderSettingScope.global,
+    global: veneraReverseTapToTurnPagesProvider,
+    fallback: DBKeys.veneraReverseTapToTurnPages.initial as bool,
+  );
+
+  static final veneraLimitImageWidth = ReaderSetting<bool>(
+    scope: ReaderSettingScope.global,
+    global: veneraLimitImageWidthProvider,
+    fallback: DBKeys.veneraLimitImageWidth.initial as bool,
+  );
+
+  static final veneraPreloadImageCount = ReaderSetting<int>(
+    scope: ReaderSettingScope.global,
+    global: veneraPreloadImageCountProvider,
+    fallback: DBKeys.veneraPreloadImageCount.initial as int,
+  );
+
+  static final veneraShowPageNumber = ReaderSetting<bool>(
+    scope: ReaderSettingScope.global,
+    global: veneraShowPageNumberProvider,
+    fallback: DBKeys.veneraShowPageNumber.initial as bool,
+  );
+
+  static final veneraEnablePageAnimation = ReaderSetting<bool>(
+    scope: ReaderSettingScope.global,
+    global: veneraEnablePageAnimationProvider,
+    fallback: DBKeys.veneraEnablePageAnimation.initial as bool,
+  );
+
+  static final veneraAutoPageTurningInterval = ReaderSetting<int>(
+    scope: ReaderSettingScope.global,
+    global: veneraAutoPageTurningIntervalProvider,
+    fallback: DBKeys.veneraAutoPageTurningInterval.initial as int,
+  );
+
+  static final veneraShowSystemStatusBar = ReaderSetting<bool>(
+    scope: ReaderSettingScope.global,
+    global: veneraShowSystemStatusBarProvider,
+    fallback: DBKeys.veneraShowSystemStatusBar.initial as bool,
+  );
+
+  static final veneraDoubleTapToZoom = ReaderSetting<bool>(
+    scope: ReaderSettingScope.global,
+    global: veneraDoubleTapToZoomProvider,
+    fallback: DBKeys.veneraDoubleTapToZoom.initial as bool,
+  );
 }
 
 @freezed
@@ -515,6 +569,15 @@ abstract class ReaderSettingsState with _$ReaderSettingsState {
     required int veneraPageAnimationMs,
     required bool veneraPageTurnVolumeKey,
     required double veneraWheelSensitivity,
+    required bool veneraTapToTurnPages,
+    required bool veneraReverseTapToTurnPages,
+    required bool veneraLimitImageWidth,
+    required int veneraPreloadImageCount,
+    required bool veneraShowPageNumber,
+    required bool veneraEnablePageAnimation,
+    required int veneraAutoPageTurningInterval,
+    required bool veneraShowSystemStatusBar,
+    required bool veneraDoubleTapToZoom,
   }) = _ReaderSettingsState;
 }
 
@@ -582,6 +645,15 @@ class ReaderSettingsModel extends _$ReaderSettingsModel {
   late VeneraPageAnimationMs _veneraPageAnimationMs;
   late VeneraPageTurnVolumeKey _veneraPageTurnVolumeKey;
   late VeneraWheelSensitivity _veneraWheelSensitivity;
+  late VeneraTapToTurnPages _veneraTapToTurnPages;
+  late VeneraReverseTapToTurnPages _veneraReverseTapToTurnPages;
+  late VeneraLimitImageWidth _veneraLimitImageWidth;
+  late VeneraPreloadImageCount _veneraPreloadImageCount;
+  late VeneraShowPageNumber _veneraShowPageNumber;
+  late VeneraEnablePageAnimation _veneraEnablePageAnimation;
+  late VeneraAutoPageTurningInterval _veneraAutoPageTurningInterval;
+  late VeneraShowSystemStatusBar _veneraShowSystemStatusBar;
+  late VeneraDoubleTapToZoom _veneraDoubleTapToZoom;
   // Globals of the per-series fields, for the "For this series" OFF path.
   late ReaderModeKey _readerModeKey;
   late ReaderNavigationLayoutKey _navigationLayoutKey;
@@ -662,6 +734,23 @@ class ReaderSettingsModel extends _$ReaderSettingsModel {
         ref.read(veneraPageTurnVolumeKeyProvider.notifier);
     _veneraWheelSensitivity =
         ref.read(veneraWheelSensitivityProvider.notifier);
+    _veneraTapToTurnPages =
+        ref.read(veneraTapToTurnPagesProvider.notifier);
+    _veneraReverseTapToTurnPages =
+        ref.read(veneraReverseTapToTurnPagesProvider.notifier);
+    _veneraLimitImageWidth =
+        ref.read(veneraLimitImageWidthProvider.notifier);
+    _veneraPreloadImageCount =
+        ref.read(veneraPreloadImageCountProvider.notifier);
+    _veneraShowPageNumber = ref.read(veneraShowPageNumberProvider.notifier);
+    _veneraEnablePageAnimation =
+        ref.read(veneraEnablePageAnimationProvider.notifier);
+    _veneraAutoPageTurningInterval =
+        ref.read(veneraAutoPageTurningIntervalProvider.notifier);
+    _veneraShowSystemStatusBar =
+        ref.read(veneraShowSystemStatusBarProvider.notifier);
+    _veneraDoubleTapToZoom =
+        ref.read(veneraDoubleTapToZoomProvider.notifier);
     _readerModeKey = ref.read(readerModeKeyProvider.notifier);
     _navigationLayoutKey = ref.read(readerNavigationLayoutKeyProvider.notifier);
     _readerOrientationKey = ref.read(readerOrientationKeyProvider.notifier);
@@ -781,6 +870,24 @@ class ReaderSettingsModel extends _$ReaderSettingsModel {
           ReaderSettings.veneraPageTurnVolumeKey.resolveWith(ref, null),
       veneraWheelSensitivity:
           ReaderSettings.veneraWheelSensitivity.resolveWith(ref, null),
+      veneraTapToTurnPages:
+          ReaderSettings.veneraTapToTurnPages.resolveWith(ref, null),
+      veneraReverseTapToTurnPages:
+          ReaderSettings.veneraReverseTapToTurnPages.resolveWith(ref, null),
+      veneraLimitImageWidth:
+          ReaderSettings.veneraLimitImageWidth.resolveWith(ref, null),
+      veneraPreloadImageCount:
+          ReaderSettings.veneraPreloadImageCount.resolveWith(ref, null),
+      veneraShowPageNumber:
+          ReaderSettings.veneraShowPageNumber.resolveWith(ref, null),
+      veneraEnablePageAnimation:
+          ReaderSettings.veneraEnablePageAnimation.resolveWith(ref, null),
+      veneraAutoPageTurningInterval:
+          ReaderSettings.veneraAutoPageTurningInterval.resolveWith(ref, null),
+      veneraShowSystemStatusBar:
+          ReaderSettings.veneraShowSystemStatusBar.resolveWith(ref, null),
+      veneraDoubleTapToZoom:
+          ReaderSettings.veneraDoubleTapToZoom.resolveWith(ref, null),
     );
   }
 
@@ -932,6 +1039,33 @@ class ReaderSettingsModel extends _$ReaderSettingsModel {
 
   void setVeneraWheelSensitivity(double value) =>
       _veneraWheelSensitivity.update(value.clamp(0.25, 4.0));
+
+  void setVeneraTapToTurnPages(bool value) =>
+      _veneraTapToTurnPages.update(value);
+
+  void setVeneraReverseTapToTurnPages(bool value) =>
+      _veneraReverseTapToTurnPages.update(value);
+
+  void setVeneraLimitImageWidth(bool value) =>
+      _veneraLimitImageWidth.update(value);
+
+  void setVeneraPreloadImageCount(int value) =>
+      _veneraPreloadImageCount.update(value.clamp(1, 8));
+
+  void setVeneraShowPageNumber(bool value) =>
+      _veneraShowPageNumber.update(value);
+
+  void setVeneraEnablePageAnimation(bool value) =>
+      _veneraEnablePageAnimation.update(value);
+
+  void setVeneraAutoPageTurningInterval(int value) =>
+      _veneraAutoPageTurningInterval.update(value.clamp(1, 30));
+
+  void setVeneraShowSystemStatusBar(bool value) =>
+      _veneraShowSystemStatusBar.update(value);
+
+  void setVeneraDoubleTapToZoom(bool value) =>
+      _veneraDoubleTapToZoom.update(value);
 
   Future<void> setReaderEngine(ReaderEngine value, {bool perSeries = true}) =>
       perSeries

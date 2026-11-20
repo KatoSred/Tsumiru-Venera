@@ -264,6 +264,11 @@ class _SettingsWindowPageListState
                           title: l.reader,
                           location: const ReaderSettingsRoute().location,
                         ),
+                        (
+                          icon: FluentIcons.apps_24_regular,
+                          title: l.veneraReaderSettingsTitle,
+                          location: const VeneraReaderSettingsRoute().location,
+                        ),
                         if (isKeyboardRuntime)
                           (
                             icon: FluentIcons.keyboard_24_regular,

@@ -306,6 +306,13 @@ List<SettingsSearchEntry> get librarySettingsSearchEntries => [
 
 List<SettingsSearchEntry> get readerSettingsSearchEntries => [
   SettingsSearchEntry(
+    id: 'readerEngine',
+    title: (l) => l.readerEngine,
+    breadcrumb: (l) => l.reader,
+    open: (c) => const ReaderSettingsRoute(highlight: 'readerEngine').push(c),
+    visible: (_, _) => true,
+  ),
+  SettingsSearchEntry(
     id: 'readerMode',
     title: (l) => l.readerMode,
     breadcrumb: (l) => l.reader,

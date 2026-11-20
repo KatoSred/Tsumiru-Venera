@@ -76,6 +76,12 @@ class SettingsScreen extends ConsumerWidget {
                       title: context.l10n.reader,
                       onTap: () => const ReaderSettingsRoute().push(context),
                     ),
+                    SettingsGroupRow(
+                      icon: FluentIcons.apps_24_regular,
+                      title: context.l10n.veneraReaderSettingsTitle,
+                      onTap: () =>
+                          const VeneraReaderSettingsRoute().push(context),
+                    ),
                     if (isKeyboardRuntime)
                       SettingsGroupRow(
                         icon: FluentIcons.keyboard_24_regular,

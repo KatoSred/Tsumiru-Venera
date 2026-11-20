@@ -84,6 +84,23 @@ class ReaderSettingsRoute extends GoRouteData with $ReaderSettingsRoute {
       detailNavigationPage(context, state, _screen);
 }
 
+class VeneraReaderSettingsRoute extends GoRouteData
+    with $VeneraReaderSettingsRoute {
+  const VeneraReaderSettingsRoute({this.highlight});
+
+  /// Scroll to and pulse the matching SettingsHighlightTarget; null skips highlighting.
+  final String? highlight;
+
+  Widget get _screen => const VeneraReaderSettingsScreen();
+
+  @override
+  Widget build(context, state) => DetailNavigationShellScreen(child: _screen);
+
+  @override
+  Page<void> buildPage(BuildContext context, GoRouterState state) =>
+      detailNavigationPage(context, state, _screen);
+}
+
 class AppearanceSettingsRoute extends GoRouteData
     with $AppearanceSettingsRoute {
   const AppearanceSettingsRoute({this.highlight});

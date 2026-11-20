@@ -39,13 +39,13 @@ import '../../controller/reader_settings_model.dart';
 import '../../crop/cropped_image_provider.dart';
 import '../../utils/flush_progress_on_lifecycle.dart';
 import '../../widgets/chrome/reader_chrome.dart' show hiddenChromeUiMode;
-import '../../widgets/chrome/reader_settings_dialog.dart';
 import '../vendor/reader.dart';
 import 'compat/appdata_shim.dart';
 import 'compat/comic_type_shim.dart';
 import 'compat/history_shim.dart';
 import 'progress_bridge.dart';
 import 'tsumiru_image_provider.dart';
+import 'venera_settings_panel.dart';
 
 /// Formal host screen for the vendored Venera engine (M4).
 ///
@@ -91,19 +91,19 @@ class VeneraEngineScreen extends HookConsumerWidget {
           settings.veneraImagesPerPage.clamp(1, 5),
       'readerScreenPicNumberForLandscape':
           settings.veneraImagesPerPage.clamp(1, 5),
-      'enablePageAnimation': settings.animatePageTransitions,
+      'enablePageAnimation': settings.veneraEnablePageAnimation,
       'pageAnimationMs': settings.veneraPageAnimationMs.clamp(50, 500),
-      'autoPageTurningInterval': 5,
-      'showSystemStatusBar': !settings.readerFullscreen,
+      'autoPageTurningInterval': settings.veneraAutoPageTurningInterval,
+      'showSystemStatusBar': settings.veneraShowSystemStatusBar,
       'enableTurnPageByVolumeKey': settings.veneraPageTurnVolumeKey,
-      'enableDoubleTapToZoom': settings.doubleTapToZoom,
+      'enableDoubleTapToZoom': settings.veneraDoubleTapToZoom,
       'enableLongPressToZoom': settings.veneraLongPressZoom,
       'longPressZoomPosition': 'center',
-      'enableTapToTurnPages': true,
-      'reverseTapToTurnPages': false,
-      'limitImageWidth': true,
-      'preloadImageCount': 4,
-      'showPageNumberInReader': true,
+      'enableTapToTurnPages': settings.veneraTapToTurnPages,
+      'reverseTapToTurnPages': settings.veneraReverseTapToTurnPages,
+      'limitImageWidth': settings.veneraLimitImageWidth,
+      'preloadImageCount': settings.veneraPreloadImageCount,
+      'showPageNumberInReader': settings.veneraShowPageNumber,
       'readerScrollSpeed': settings.veneraWheelSensitivity,
     };
 
@@ -289,19 +289,10 @@ class VeneraEngineScreen extends HookConsumerWidget {
     }
 
     void openSettings() {
-      // Same sheet as the native engine — it carries the engine switch and
-      // the Venera groups.
-      final visibility = ValueNotifier<bool>(false);
-      final readerPadding = ValueNotifier<double>(settings.sidePadding);
-      unawaited(
-        showReaderSettingsSheet(
-          context: context,
-          ref: ref,
-          mangaId: mangaId,
-          visibility: visibility,
-          readerPadding: readerPadding,
-        ),
-      );
+      // ADAPTER(M5): the Venera engine opens its own panel instead of
+      // Tsumiru's showReaderSettingsSheet; both engines' panels stay
+      // independent.
+      unawaited(showVeneraSettingsPanel(context, ref));
     }
 
     // Desktop window close may skip pop/dispose; flush the vendored engine's

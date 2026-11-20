@@ -75,3 +75,75 @@ class VeneraWheelSensitivity extends _$VeneraWheelSensitivity
   @override
   double? build() => initialize(DBKeys.veneraWheelSensitivity);
 }
+
+/// Tap edges turn pages.
+@riverpod
+class VeneraTapToTurnPages extends _$VeneraTapToTurnPages
+    with SharedPreferenceClientMixin<bool> {
+  @override
+  bool? build() => initialize(DBKeys.veneraTapToTurnPages);
+}
+
+/// Swap left/right tap-to-turn zones.
+@riverpod
+class VeneraReverseTapToTurnPages extends _$VeneraReverseTapToTurnPages
+    with SharedPreferenceClientMixin<bool> {
+  @override
+  bool? build() => initialize(DBKeys.veneraReverseTapToTurnPages);
+}
+
+/// Cap image width in continuous modes.
+@riverpod
+class VeneraLimitImageWidth extends _$VeneraLimitImageWidth
+    with SharedPreferenceClientMixin<bool> {
+  @override
+  bool? build() => initialize(DBKeys.veneraLimitImageWidth);
+}
+
+/// Pages preloaded ahead of the viewport.
+@riverpod
+class VeneraPreloadImageCount extends _$VeneraPreloadImageCount
+    with SharedPreferenceClientMixin<int> {
+  @override
+  int? build() => initialize(DBKeys.veneraPreloadImageCount);
+}
+
+/// Show page number overlay.
+@riverpod
+class VeneraShowPageNumber extends _$VeneraShowPageNumber
+    with SharedPreferenceClientMixin<bool> {
+  @override
+  bool? build() => initialize(DBKeys.veneraShowPageNumber);
+}
+
+/// Page-turn animation toggle.
+@riverpod
+class VeneraEnablePageAnimation extends _$VeneraEnablePageAnimation
+    with SharedPreferenceClientMixin<bool> {
+  @override
+  bool? build() => initialize(DBKeys.veneraEnablePageAnimation);
+}
+
+/// Auto page turning interval in seconds.
+@riverpod
+class VeneraAutoPageTurningInterval extends _$VeneraAutoPageTurningInterval
+    with SharedPreferenceClientMixin<int> {
+  @override
+  int? build() => initialize(DBKeys.veneraAutoPageTurningInterval);
+}
+
+/// Show the system status bar over the reader.
+@riverpod
+class VeneraShowSystemStatusBar extends _$VeneraShowSystemStatusBar
+    with SharedPreferenceClientMixin<bool> {
+  @override
+  bool? build() => initialize(DBKeys.veneraShowSystemStatusBar);
+}
+
+/// Double-tap toggles zoom.
+@riverpod
+class VeneraDoubleTapToZoom extends _$VeneraDoubleTapToZoom
+    with SharedPreferenceClientMixin<bool> {
+  @override
+  bool? build() => initialize(DBKeys.veneraDoubleTapToZoom);
+}

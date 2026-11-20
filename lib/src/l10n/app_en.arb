@@ -4605,5 +4605,27 @@
     }
   },
   "veneraPageTurnVolumeKey": "Volume keys turn pages",
-  "veneraWheelSensitivity": "Wheel scroll sensitivity"
+  "veneraWheelSensitivity": "Wheel scroll sensitivity",
+  "veneraReaderSettingsTitle": "Venera reader",
+  "veneraGroupReadingMode": "Reading mode",
+  "veneraGroupGestures": "Gestures",
+  "veneraGroupDisplay": "Display",
+  "veneraGroupBehavior": "Behavior",
+  "veneraTapToTurnPages": "Tap to turn pages",
+  "veneraReverseTapToTurnPages": "Reverse tap zones",
+  "veneraLimitImageWidth": "Limit image width",
+  "veneraPreloadImageCount": "Preload pages",
+  "veneraShowPageNumber": "Show page number",
+  "veneraShowSystemStatusBar": "Show system status bar",
+  "veneraEnablePageAnimation": "Page turn animation",
+  "veneraAutoPageTurningInterval": "Auto page turning interval",
+  "veneraAutoPageTurningSecondsValue": "{n} s",
+  "@veneraAutoPageTurningSecondsValue": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "veneraDoubleTapToZoom": "Double tap to zoom"
 }

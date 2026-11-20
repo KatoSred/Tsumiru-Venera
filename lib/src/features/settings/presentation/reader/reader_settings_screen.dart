@@ -44,6 +44,7 @@ import 'widgets/reader_volume_tap_tile/reader_volume_tap_tile.dart';
 import 'widgets/reader_webtoon_prefs/reader_webtoon_prefs.dart';
 import 'widgets/reader_zoom_toggles/reader_zoom_toggles.dart';
 import 'widgets/tap_zones_overlay/tap_zones_overlay.dart';
+import 'widgets/venera_engine_prefs/venera_engine_prefs.dart';
 
 class ReaderSettingsScreen extends ConsumerWidget {
   const ReaderSettingsScreen({super.key});
@@ -80,6 +81,32 @@ class ReaderSettingsScreen extends ConsumerWidget {
               padding: settingsPagePadding(context),
               children: [
                 const DesktopPageLeadingGap(16),
+                // Engine switch leads the page: it decides which engine the
+                // reader below applies these settings to.
+                SettingsGroupHeading(
+                  label: context.l10n.readerEngine,
+                  first: true,
+                ),
+                SettingsGroupCard(
+                  children: [
+                    SettingsHighlightTarget(
+                      id: 'readerEngine',
+                      child: _EnumChips<ReaderEngine>(
+                        label: context.l10n.readerEngine,
+                        values: ReaderEngine.values,
+                        // Brand names are not localized (see ReaderEngine).
+                        labelOf: (v) =>
+                            v == ReaderEngine.venera ? 'Venera' : 'Tsumiru',
+                        selected: ref.watch(readerEngineKeyProvider) ??
+                            ReaderEngine.tsumiru,
+                        onSelected: (v) => ref
+                            .read(readerEngineKeyProvider.notifier)
+                            .update(v),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
                 const SettingsGroupCard(
                   children: [
                     SettingsHighlightTarget(
