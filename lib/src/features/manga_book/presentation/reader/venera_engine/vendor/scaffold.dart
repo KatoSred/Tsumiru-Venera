@@ -392,16 +392,15 @@ class _ReaderScaffoldState extends State<_ReaderScaffold> {
               return Row(
                 children: [
                   if (!small)
-                    // ADAPTER: follow the app's theme primary color (user
-                    // request) at reduced opacity (user feedback: too solid).
+                    // ADAPTER: solid primaryContainer + onPrimaryContainer —
+                    // theme-following but opaque, so the underlying manga art
+                    // can't tint the pill (translucent primary read as
+                    // "yellow" over warm pages — user feedback).
                     Container(
                       height: 20,
                       padding: const EdgeInsets.fromLTRB(5, 1, 5, 0),
                       decoration: BoxDecoration(
-                        color: Theme.of(context)
-                            .colorScheme
-                            .primary
-                            .toOpacity(0.55),
+                        color: Theme.of(context).colorScheme.primaryContainer,
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Center(
@@ -409,7 +408,8 @@ class _ReaderScaffoldState extends State<_ReaderScaffold> {
                           text,
                           style: TextStyle(
                             fontSize: 11,
-                            color: Theme.of(context).colorScheme.onPrimary,
+                            color:
+                                Theme.of(context).colorScheme.onPrimaryContainer,
                           ),
                         ),
                       ),

@@ -482,8 +482,17 @@ class _ReaderState extends State<Reader>
 
   @override
   void updateChrome() {
+    // ADAPTER: re-read the live reading mode so panel changes apply in
+    // place (imagesPerPage is handled by _checkImagesPerPageChange in
+    // build; the gallery widget is keyed by mode + per-page count).
+    final newMode = ReaderMode.fromKey(
+      getReaderSetting(cid, type.sourceKey, 'readerMode'),
+    );
+    if (newMode != mode) {
+      mode = newMode;
+      initImagesPerPage(page);
+    }
     _scaffoldKey.currentState?.update();
-    // The images/gesture layers also read settings during their builds.
     setState(() {});
   }
 
