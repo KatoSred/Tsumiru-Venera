@@ -376,14 +376,21 @@ class _ReaderScaffoldState extends State<_ReaderScaffold> {
               return Row(
                 children: [
                   if (!small)
+                    // ADAPTER: height 24 -> 20, fontSize 11 — user feedback:
+                    // the in-bar page pill read too large.
                     Container(
-                      height: 24,
-                      padding: const EdgeInsets.fromLTRB(6, 2, 6, 0),
+                      height: 20,
+                      padding: const EdgeInsets.fromLTRB(5, 1, 5, 0),
                       decoration: BoxDecoration(
                         color: Theme.of(context).colorScheme.tertiaryContainer,
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(6),
                       ),
-                      child: Center(child: Text(text)),
+                      child: Center(
+                        child: Text(
+                          text,
+                          style: const TextStyle(fontSize: 11),
+                        ),
+                      ),
                     ).paddingLeft(16),
                   const Spacer(),
                   for (var button in buttons)
@@ -462,6 +469,8 @@ class _ReaderScaffoldState extends State<_ReaderScaffold> {
         ? "$epName : $pageText"
         : pageText;
 
+    // ADAPTER: fontSize 14 -> 12, thinner stroke — user feedback: both page
+    // indicators read too large.
     return Positioned(
       bottom: 13,
       left: 25,
@@ -470,14 +479,14 @@ class _ReaderScaffoldState extends State<_ReaderScaffold> {
           Text(
             text,
             style: TextStyle(
-              fontSize: 14,
+              fontSize: 12,
               foreground: Paint()
                 ..style = PaintingStyle.stroke
-                ..strokeWidth = 1.4
+                ..strokeWidth = 1.1
                 ..color = context.colorScheme.onInverseSurface,
             ),
           ),
-          Text(text),
+          Text(text, style: const TextStyle(fontSize: 12)),
         ],
       ),
     );
