@@ -124,12 +124,16 @@ class _ReaderScaffoldState extends State<_ReaderScaffold> {
             child: widget.child,
           ),
         ),
-        if (getReaderSetting(
+    // ADAPTER: hide the floating badge while the controls are open — the
+    // bottom bar already shows the in-bar E:P pill (original venera hides it
+    // behind the bar; rendering it on top doubled the page indicators).
+    if (!_isOpen &&
+        getReaderSetting(
           context.reader.cid,
           context.reader.type.sourceKey,
           'showPageNumberInReader',
         ))
-          buildPageInfoText(),
+      buildPageInfoText(),
         // VENDOR-CUT: buildStatusInfo (clock/battery widgets) removed with
         // the battery_plus dependency.
         AnimatedPositioned(
@@ -458,12 +462,8 @@ class _ReaderScaffoldState extends State<_ReaderScaffold> {
         ? "$epName : $pageText"
         : pageText;
 
-    // ADAPTER: slide the badge above the bottom bar when the controls are
-    // open — the original venera leaves it at bottom:13 where it ghosts
-    // through the translucent bar (user-reported as clipped/abnormal).
-    return AnimatedPositioned(
-      duration: const Duration(milliseconds: 180),
-      bottom: _isOpen ? kBottomBarHeight + 13 : 13,
+    return Positioned(
+      bottom: 13,
       left: 25,
       child: Stack(
         children: [
