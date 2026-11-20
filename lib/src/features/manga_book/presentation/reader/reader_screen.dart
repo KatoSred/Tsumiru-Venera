@@ -38,14 +38,11 @@ import '../manga_details/controller/scanlator_dedup.dart';
 import 'controller/auto_webtoon.dart';
 import 'controller/display_cutout.dart';
 import 'controller/reader_controller.dart';
+import 'controller/reader_settings_model.dart';
 import 'utils/download_ahead.dart';
 import 'utils/flush_progress_on_lifecycle.dart';
 import 'utils/reader_progress_queue.dart';
-// TEMP-DEBUG(M1): vendored Venera engine debug entry; M4 will replace this
-// with the formal engine-split routing.
-import 'venera_engine/adapter/compat/comic_type_shim.dart' as venera_comic;
-import 'venera_engine/adapter/compat/history_shim.dart' as venera_history;
-import 'venera_engine/vendor/reader.dart' as venera_reader;
+import 'venera_engine/adapter/venera_engine_screen.dart';
 import 'widgets/chrome/reader_chrome.dart';
 import 'widgets/reader_mode/infinity_continuous/multichapter_continuous_reader_mode.dart';
 import 'widgets/reader_mode/multichapter_paged_reader_mode.dart';
@@ -66,6 +63,22 @@ class ReaderScreen extends HookConsumerWidget {
   final bool openAtEnd;
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // M4 engine split: the effective engine (per-series meta → global key)
+    // selects the vendored Venera screen; everything below is the native
+    // Tsumiru reader path.
+    final effectiveReaderEngine = ref.watch(
+      readerSettingsModelProvider(mangaId).select((s) => s.readerEngine),
+    );
+    if (effectiveReaderEngine == ReaderEngine.venera) {
+      return VeneraEngineScreen(
+        mangaId: mangaId,
+        chapterId: chapterId,
+        readerScanlatorGroup: readerScanlatorGroup,
+        showReaderLayoutAnimation: showReaderLayoutAnimation,
+        openAtEnd: openAtEnd,
+      );
+    }
+
     watchDownloadAhead(ref);
     final mangaProvider = mangaWithIdProvider(mangaId: mangaId);
     final chapterProviderWithIndex = chapterProvider(chapterId: chapterId);
@@ -293,11 +306,7 @@ class ReaderScreen extends HookConsumerWidget {
         ? chapterPages
         : AsyncData<ChapterPagesDto?>(pinnedChapterPages);
 
-    // TEMP-DEBUG(M1): wrap the reader in a Stack so a floating debug button
-    // can open the vendored Venera reader; remove once M4 routing lands.
-    return Stack(
-      children: [
-        PopScope(
+    return PopScope(
       onPopInvokedWithResult: (didPop, _) async {
         if (didPop) {
           SystemChrome.setEnabledSystemUIMode(
@@ -586,20 +595,6 @@ class ReaderScreen extends HookConsumerWidget {
           ),
         ),
       ),
-        ),
-        // TEMP-DEBUG(M1): floating button opening the vendored reader with
-        // 3 network placeholder images.
-        Positioned(
-          right: 16,
-          bottom: 16,
-          child: FloatingActionButton.extended(
-            heroTag: 'venera_engine_debug_m1',
-            onPressed: () => debugOpenVeneraReader(context),
-            icon: const Icon(Icons.science),
-            label: const Text('Venera M1'),
-          ),
-        ),
-      ],
     );
   }
 }
@@ -611,39 +606,4 @@ T? _usePinned<T extends Object>(T? value, int key) {
   if (value == null) return null;
   pinned.value = (key: key, value: value);
   return value;
-}
-
-// TEMP-DEBUG(M1): opens the vendored Venera reader with 3 network placeholder
-// images (https://picsum.photos/seed/...). Local-branch-only debug hook; M4
-// will convert this into the formal reader-engine split entry.
-void debugOpenVeneraReader(BuildContext context) {
-  final images = List.generate(
-    3,
-    (i) => 'https://picsum.photos/seed/venera_m1_$i/800/1200',
-  );
-  Navigator.of(context).push(
-    MaterialPageRoute<void>(
-      builder: (_) => _VeneraEngineDebugPage(images: images),
-    ),
-  );
-}
-
-class _VeneraEngineDebugPage extends StatelessWidget {
-  const _VeneraEngineDebugPage({required this.images});
-
-  final List<String> images;
-
-  @override
-  Widget build(BuildContext context) {
-    return venera_reader.Reader(
-      type: const venera_comic.ComicType('tsumiru'),
-      cid: 'venera-engine-debug',
-      name: 'Venera Engine Debug (M1)',
-      chapters: null,
-      history: venera_history.History(),
-      author: '',
-      tags: const [],
-      debugImages: images,
-    );
-  }
 }

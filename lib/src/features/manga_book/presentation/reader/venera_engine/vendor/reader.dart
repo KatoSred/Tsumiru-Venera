@@ -27,8 +27,13 @@
 //    data shells).
 //  - _VolumeListener now uses Tsumiru's flutter_android_volume_keydown via
 //    volume shim.
-//  - Added optional debugImages constructor param + setImagesForDebug()
-//    (TEMP-DEBUG(M1): network placeholder entry).
+//  - Added optional debugImages constructor param + injectImages()
+//    controller entry (M1 debug heritage; M4 formalized both).
+//  - ADAPTER(M4): added public VeneraReaderController interface; _ReaderState
+//    implements it and is handed to the host via `onControllerCreated`.
+//    `Reader` also gained `onExit` (host PopScope coordination) and
+//    `onOpenSettings` (opens Tsumiru's settings sheet from the vendor
+//    scaffold) — callbacks only, no riverpod/hooks inside vendor/.
 
 library;
 
@@ -95,9 +100,19 @@ class Reader extends StatefulWidget {
     this.initialChapterGroup,
     required this.author,
     required this.tags,
-    // TEMP-DEBUG(M1): images injected directly for the debug entry; M2 will
-    // feed real chapter data via the adapter layer instead.
+    // M1 debug entry heritage: images injected directly; the formal path
+    // feeds chapter data via `chapterPagesLoader` (adapter).
     this.debugImages,
+    // ADAPTER(M4): host hooks — controller handle, exit coordination and
+    // Tsumiru settings-sheet entry. All optional; vendor stays host-agnostic.
+    this.onControllerCreated,
+    this.onExit,
+    this.onOpenSettings,
+    // ADAPTER(M4): data/adapters injected once in initState (state fields are
+    // library-private, so the host configures them through the widget).
+    this.imageProviderFactory,
+    this.chapterPagesLoader,
+    this.progressSink,
   });
 
   final ComicType type;
@@ -123,15 +138,51 @@ class Reader extends StatefulWidget {
 
   final History history;
 
-  /// TEMP-DEBUG(M1): image list injected by the debug entry.
+  /// Image list injected by the M1 debug entry (host-supplied).
   final List<String>? debugImages;
+
+  /// ADAPTER(M4): called once in initState with the public controller handle.
+  final ValueChanged<VeneraReaderController>? onControllerCreated;
+
+  /// ADAPTER(M4): host exit hook; reserved for PopScope coordination.
+  final VoidCallback? onExit;
+
+  /// ADAPTER(M4): opens the host settings panel from the vendor scaffold's
+  /// settings entry (replaces the M1 placeholder sidebar).
+  final VoidCallback? onOpenSettings;
+
+  /// ADAPTER(M4): per-page image provider factory (host-injected).
+  final ImageProvider Function(String imageKey)? imageProviderFactory;
+
+  /// ADAPTER(M4): image URL list loader (0-based chapter index).
+  final Future<List<String>> Function(int chapterIndex)? chapterPagesLoader;
+
+  /// ADAPTER(M4): progress bridge to Tsumiru's persistence layer.
+  final VeneraProgressSink? progressSink;
 
   @override
   State<Reader> createState() => _ReaderState();
 }
 
+/// ADAPTER(M4): public handle for the host to drive the vendored reader state.
+/// Implemented by the library-private `_ReaderState`; deliberately narrow so
+/// future host entries (M5) extend this interface instead of exposing the
+/// State.
+abstract interface class VeneraReaderController {
+  /// Emits any debounced pending progress immediately (exit, lifecycle).
+  void flushPendingProgress();
+
+  /// Replaces the current image list (debug/adapter entry).
+  void injectImages(List<String> pages);
+}
+
 class _ReaderState extends State<Reader>
-    with _ReaderLocation, _ReaderWindow, _VolumeListener, _ImagePerPageHandler {
+    with
+        _ReaderLocation,
+        _ReaderWindow,
+        _VolumeListener,
+        _ImagePerPageHandler
+    implements VeneraReaderController {
   @override
   void update() {
     setState(() {});
@@ -173,9 +224,10 @@ class _ReaderState extends State<Reader>
   /// restoring a position (especially openAtEnd) never records progress.
   bool _progressActive = false;
 
-  /// TEMP-DEBUG(M1): injects images for the debug entry; also usable by M4
-  /// as the formal data-injection hook.
-  void setImagesForDebug(List<String> value) {
+  /// ADAPTER(M4): injects images through the public controller surface
+  /// (`injectImages`); replaces the old setImagesForDebug entry.
+  @override
+  void injectImages(List<String> value) {
     setState(() {
       images = value;
       isLoading = true;
@@ -225,6 +277,15 @@ class _ReaderState extends State<Reader>
     );
     history = widget.history;
     images = widget.debugImages;
+    // ADAPTER(M4): copy host-injected adapters from the widget onto the
+    // state (the fields are library-private; widget params are the public
+    // injection surface).
+    imageProviderFactory = widget.imageProviderFactory;
+    chapterPagesLoader = widget.chapterPagesLoader;
+    _progressSink = widget.progressSink;
+    // ADAPTER(M4): hand the host its controller handle once, before the
+    // first chapter load so exit/lifecycle flushes are registered in time.
+    widget.onControllerCreated?.call(this);
     if (!getReaderSetting(
       cid,
       type.sourceKey,
@@ -397,6 +458,7 @@ class _ReaderState extends State<Reader>
 
   /// Flush any pending debounced progress immediately (chapter switch, pop,
   /// app lifecycle). Safe to call when nothing is pending.
+  @override
   void flushPendingProgress() {
     if (_updateHistoryTimer != null) {
       _updateHistoryTimer!.cancel();

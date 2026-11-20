@@ -7,6 +7,7 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../../../../../constants/db_keys.dart';
 import '../../../../../../../constants/enum.dart';
 import '../../../../../../../utils/extensions/custom_extensions.dart';
 import '../../../../../../../widgets/compact_switch.dart';
@@ -15,6 +16,7 @@ import '../../../../../../settings/presentation/reader/widgets/reader_force_hori
 import '../../../../../../settings/presentation/reader/widgets/reader_general_prefs/reader_general_prefs.dart';
 import '../../../../../../settings/presentation/reader/widgets/reader_keep_screen_on_tile/reader_keep_screen_on_tile.dart';
 import '../../../../../../settings/presentation/reader/widgets/reader_left_handed_seekbar_tile/reader_left_handed_seekbar_tile.dart';
+import '../../../../../../settings/widgets/slider_setting_tile/slider_setting_tile.dart';
 import '../../../controller/reader_settings_model.dart';
 import 'int_slider_tile.dart';
 
@@ -40,6 +42,46 @@ class GeneralTab extends ConsumerWidget {
     return ListView(
       primary: false,
       children: [
+        // M4: reader engine split — the vendored Venera engine renders the
+        // reader when selected (per-series overridable via the model).
+        _SectionLabel(context.l10n.readerEngine),
+        _ChipRow(
+          children: [
+            SegmentedButton<ReaderEngine>(
+              segments: const [
+                ButtonSegment(
+                  value: ReaderEngine.tsumiru,
+                  label: Text('Tsumiru'),
+                ),
+                ButtonSegment(
+                  value: ReaderEngine.venera,
+                  label: Text('Venera'),
+                ),
+              ],
+              selected: {settings.readerEngine},
+              onSelectionChanged: (selection) =>
+                  model.setReaderEngine(selection.first),
+            ),
+          ],
+        ),
+        if (settings.readerEngine == ReaderEngine.venera) ...[
+          _SectionLabel(context.l10n.veneraEngineGroup),
+          CompactSwitchListTile(
+            controlAffinity: ListTileControlAffinity.trailing,
+            title: Text(context.l10n.veneraPageTurnVolumeKey),
+            value: settings.veneraPageTurnVolumeKey,
+            onChanged: model.setVeneraPageTurnVolumeKey,
+          ),
+          SliderSettingTile(
+            title: context.l10n.veneraWheelSensitivity,
+            value: settings.veneraWheelSensitivity,
+            defaultValue: DBKeys.veneraWheelSensitivity.initial as double,
+            min: 0.25,
+            max: 4,
+            getSliderLabel: (val) => '${val.toStringAsFixed(2)}x',
+            onChanged: model.setVeneraWheelSensitivity,
+          ),
+        ],
         _SectionLabel(context.l10n.readerBackgroundColor),
         // Chip order is the UI order, not the stored-int order.
         _ChipRow(

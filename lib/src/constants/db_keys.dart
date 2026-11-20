@@ -258,7 +258,21 @@ enum DBKeys {
   colorFilterValue(0),
   colorFilterBlendMode(ColorFilterBlendMode.defaultBlend),
   grayscale(false),
-  invertedColors(false);
+  invertedColors(false),
+  // Venera engine (M4): which reader engine renders the reader.
+  readerEngine(ReaderEngine.tsumiru),
+  // Gallery-mode images shown per screen (1-5).
+  veneraImagesPerPage(1),
+  // Continuous vs gallery when the Venera engine opens a series.
+  veneraContinuousDefault(true),
+  // Long-press zooms the current page.
+  veneraLongPressZoom(true),
+  // Page-turn animation duration in milliseconds.
+  veneraPageAnimationMs(250),
+  // Hardware volume keys turn pages (Android).
+  veneraPageTurnVolumeKey(false),
+  // Continuous-mode wheel scroll multiplier.
+  veneraWheelSensitivity(1.0);
 
   const DBKeys(this.initial);
 

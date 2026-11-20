@@ -515,8 +515,13 @@ class _ReaderScaffoldState extends State<_ReaderScaffold> {
   }
 
   void openSetting() {
-    // VENDOR-CUT: venera ReaderSettings page removed; M4 will wire this
-    // entry to Tsumiru's settings panel.
+    // ADAPTER(M4): host callback opens Tsumiru's settings sheet; the M1
+    // placeholder remains only when the host supplies no callback.
+    final openHostSettings = context.reader.widget.onOpenSettings;
+    if (openHostSettings != null) {
+      openHostSettings();
+      return;
+    }
     _openSideBar(
       const _ReaderSettingsPlaceholder(),
       width: 400,

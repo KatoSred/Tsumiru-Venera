@@ -428,9 +428,18 @@ class _GalleryModeState extends State<_GalleryMode>
     if ((page - controller.page!.round()).abs() > 1) {
       controller.jumpToPage(page > controller.page! ? page - 1 : page + 1);
     }
+    // ADAPTER(M4): page-turn duration bridged to Tsumiru's
+    // veneraPageAnimationMs via the settings shim (default 250 ms).
+    final duration = Duration(
+      milliseconds: getReaderSetting(
+        context.reader.cid,
+        context.reader.type.sourceKey,
+        'pageAnimationMs',
+      ),
+    );
     return controller.animateToPage(
       page,
-      duration: const Duration(milliseconds: 200),
+      duration: duration,
       curve: Curves.ease,
     );
   }
@@ -1047,9 +1056,18 @@ class _ContinuousModeState extends State<_ContinuousMode>
 
   @override
   Future<void> animateToPage(int page) {
+    // ADAPTER(M4): page-turn duration bridged to Tsumiru's
+    // veneraPageAnimationMs via the settings shim (default 250 ms).
+    final duration = Duration(
+      milliseconds: getReaderSetting(
+        context.reader.cid,
+        context.reader.type.sourceKey,
+        'pageAnimationMs',
+      ),
+    );
     return itemScrollController.scrollTo(
       index: page,
-      duration: const Duration(milliseconds: 200),
+      duration: duration,
       curve: Curves.ease,
     );
   }

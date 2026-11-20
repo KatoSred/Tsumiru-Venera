@@ -158,6 +158,41 @@ class ReadingModeTab extends ConsumerWidget {
                 )
               : _PagedSection(key: const ValueKey('paged'), mangaId: mangaId),
         ),
+        // M4: Venera engine knobs — only shown when this series reads with
+        // the vendored engine; Tsumiru-native settings above stay untouched.
+        if (settings.readerEngine == ReaderEngine.venera) ...[
+          _GroupHeading(context.l10n.veneraEngineGroup),
+          IntSliderTile(
+            title: context.l10n.veneraImagesPerPage,
+            valueLabel: '${settings.veneraImagesPerPage}',
+            value: settings.veneraImagesPerPage,
+            min: 1,
+            max: 5,
+            onChanged: model.setVeneraImagesPerPage,
+          ),
+          CompactSwitchListTile(
+            controlAffinity: ListTileControlAffinity.trailing,
+            title: Text(context.l10n.veneraContinuousModeDefault),
+            value: settings.veneraContinuousDefault,
+            onChanged: model.setVeneraContinuousDefault,
+          ),
+          CompactSwitchListTile(
+            controlAffinity: ListTileControlAffinity.trailing,
+            title: Text(context.l10n.veneraLongPressToZoom),
+            value: settings.veneraLongPressZoom,
+            onChanged: model.setVeneraLongPressZoom,
+          ),
+          IntSliderTile(
+            title: context.l10n.veneraPageAnimationDuration,
+            valueLabel: context.l10n.veneraPageAnimationMsValue(
+              settings.veneraPageAnimationMs,
+            ),
+            value: settings.veneraPageAnimationMs,
+            min: 50,
+            max: 500,
+            onChanged: model.setVeneraPageAnimationMs,
+          ),
+        ],
       ],
     );
   }

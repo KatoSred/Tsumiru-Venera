@@ -21,6 +21,7 @@ import '../../../../settings/presentation/reader/widgets/reader_pinch_to_zoom/re
 import '../../../../settings/presentation/reader/widgets/reader_tap_invert/reader_tap_invert.dart';
 import '../../../../settings/presentation/reader/widgets/reader_webtoon_prefs/reader_webtoon_prefs.dart';
 import '../../../../settings/presentation/reader/widgets/reader_zoom_toggles/reader_zoom_toggles.dart';
+import '../../../../settings/presentation/reader/widgets/venera_engine_prefs/venera_engine_prefs.dart';
 import '../../../data/manga_book/manga_book_repository.dart';
 import '../../../domain/manga/manga_model.dart';
 import '../../manga_details/controller/manga_details_controller.dart';
@@ -391,6 +392,51 @@ abstract final class ReaderSettings {
     global: invertedColorsProvider,
     fallback: DBKeys.invertedColors.initial as bool,
   );
+
+  // Venera engine (M4). The engine switch is per-series overridable;
+  // engine-specific knobs are global-only.
+  static final readerEngine = ReaderSetting<ReaderEngine>(
+    scope: ReaderSettingScope.perSeries,
+    perSeriesKey: MangaMetaKeys.readerEngine,
+    global: readerEngineKeyProvider,
+    fallback: DBKeys.readerEngine.initial as ReaderEngine,
+  );
+
+  static final veneraImagesPerPage = ReaderSetting<int>(
+    scope: ReaderSettingScope.global,
+    global: veneraImagesPerPageProvider,
+    fallback: DBKeys.veneraImagesPerPage.initial as int,
+  );
+
+  static final veneraContinuousDefault = ReaderSetting<bool>(
+    scope: ReaderSettingScope.global,
+    global: veneraContinuousDefaultProvider,
+    fallback: DBKeys.veneraContinuousDefault.initial as bool,
+  );
+
+  static final veneraLongPressZoom = ReaderSetting<bool>(
+    scope: ReaderSettingScope.global,
+    global: veneraLongPressZoomProvider,
+    fallback: DBKeys.veneraLongPressZoom.initial as bool,
+  );
+
+  static final veneraPageAnimationMs = ReaderSetting<int>(
+    scope: ReaderSettingScope.global,
+    global: veneraPageAnimationMsProvider,
+    fallback: DBKeys.veneraPageAnimationMs.initial as int,
+  );
+
+  static final veneraPageTurnVolumeKey = ReaderSetting<bool>(
+    scope: ReaderSettingScope.global,
+    global: veneraPageTurnVolumeKeyProvider,
+    fallback: DBKeys.veneraPageTurnVolumeKey.initial as bool,
+  );
+
+  static final veneraWheelSensitivity = ReaderSetting<double>(
+    scope: ReaderSettingScope.global,
+    global: veneraWheelSensitivityProvider,
+    fallback: DBKeys.veneraWheelSensitivity.initial as double,
+  );
 }
 
 @freezed
@@ -455,6 +501,13 @@ abstract class ReaderSettingsState with _$ReaderSettingsState {
     required ColorFilterBlendMode colorFilterBlendMode,
     required bool grayscale,
     required bool invertedColors,
+    required ReaderEngine readerEngine,
+    required int veneraImagesPerPage,
+    required bool veneraContinuousDefault,
+    required bool veneraLongPressZoom,
+    required int veneraPageAnimationMs,
+    required bool veneraPageTurnVolumeKey,
+    required double veneraWheelSensitivity,
   }) = _ReaderSettingsState;
 }
 
@@ -514,12 +567,20 @@ class ReaderSettingsModel extends _$ReaderSettingsModel {
   late ColorFilterBlendModeKey _colorFilterBlendMode;
   late Grayscale _grayscale;
   late InvertedColors _invertedColors;
+  // Venera engine (M4).
+  late VeneraImagesPerPage _veneraImagesPerPage;
+  late VeneraContinuousDefault _veneraContinuousDefault;
+  late VeneraLongPressZoom _veneraLongPressZoom;
+  late VeneraPageAnimationMs _veneraPageAnimationMs;
+  late VeneraPageTurnVolumeKey _veneraPageTurnVolumeKey;
+  late VeneraWheelSensitivity _veneraWheelSensitivity;
   // Globals of the per-series fields, for the "For this series" OFF path.
   late ReaderModeKey _readerModeKey;
   late ReaderNavigationLayoutKey _navigationLayoutKey;
   late ReaderOrientationKey _readerOrientationKey;
   late ReaderTapInvertKey _readerTapInvertKey;
   late ReaderPaddingKey _readerPaddingKey;
+  late ReaderEngineKey _readerEngineKey;
 
   @override
   ReaderSettingsState build(int mangaId) {
@@ -583,11 +644,22 @@ class ReaderSettingsModel extends _$ReaderSettingsModel {
     _colorFilterBlendMode = ref.read(colorFilterBlendModeKeyProvider.notifier);
     _grayscale = ref.read(grayscaleProvider.notifier);
     _invertedColors = ref.read(invertedColorsProvider.notifier);
+    _veneraImagesPerPage = ref.read(veneraImagesPerPageProvider.notifier);
+    _veneraContinuousDefault =
+        ref.read(veneraContinuousDefaultProvider.notifier);
+    _veneraLongPressZoom = ref.read(veneraLongPressZoomProvider.notifier);
+    _veneraPageAnimationMs =
+        ref.read(veneraPageAnimationMsProvider.notifier);
+    _veneraPageTurnVolumeKey =
+        ref.read(veneraPageTurnVolumeKeyProvider.notifier);
+    _veneraWheelSensitivity =
+        ref.read(veneraWheelSensitivityProvider.notifier);
     _readerModeKey = ref.read(readerModeKeyProvider.notifier);
     _navigationLayoutKey = ref.read(readerNavigationLayoutKeyProvider.notifier);
     _readerOrientationKey = ref.read(readerOrientationKeyProvider.notifier);
     _readerTapInvertKey = ref.read(readerTapInvertKeyProvider.notifier);
     _readerPaddingKey = ref.read(readerPaddingKeyProvider.notifier);
+    _readerEngineKey = ref.read(readerEngineKeyProvider.notifier);
     final meta =
         ref.watch(mangaWithIdProvider(mangaId: mangaId)).value?.metaData;
     return ReaderSettingsState(
@@ -683,6 +755,22 @@ class ReaderSettingsModel extends _$ReaderSettingsModel {
           ReaderSettings.colorFilterBlendMode.resolveWith(ref, null),
       grayscale: ReaderSettings.grayscale.resolveWith(ref, null),
       invertedColors: ReaderSettings.invertedColors.resolveWith(ref, null),
+      readerEngine: ReaderSettings.readerEngine.resolveWith(
+        ref,
+        meta?.readerEngine,
+      ),
+      veneraImagesPerPage:
+          ReaderSettings.veneraImagesPerPage.resolveWith(ref, null),
+      veneraContinuousDefault:
+          ReaderSettings.veneraContinuousDefault.resolveWith(ref, null),
+      veneraLongPressZoom:
+          ReaderSettings.veneraLongPressZoom.resolveWith(ref, null),
+      veneraPageAnimationMs:
+          ReaderSettings.veneraPageAnimationMs.resolveWith(ref, null),
+      veneraPageTurnVolumeKey:
+          ReaderSettings.veneraPageTurnVolumeKey.resolveWith(ref, null),
+      veneraWheelSensitivity:
+          ReaderSettings.veneraWheelSensitivity.resolveWith(ref, null),
     );
   }
 
@@ -811,6 +899,34 @@ class ReaderSettingsModel extends _$ReaderSettingsModel {
   void setGrayscale(bool value) => _grayscale.update(value);
 
   void setInvertedColors(bool value) => _invertedColors.update(value);
+
+  // Venera engine (M4). Global-only knobs; the engine switch follows the
+  // readerMode per-series pattern.
+  void setVeneraImagesPerPage(int value) =>
+      _veneraImagesPerPage.update(value.clamp(1, 5));
+
+  void setVeneraContinuousDefault(bool value) =>
+      _veneraContinuousDefault.update(value);
+
+  void setVeneraLongPressZoom(bool value) =>
+      _veneraLongPressZoom.update(value);
+
+  void setVeneraPageAnimationMs(int value) =>
+      _veneraPageAnimationMs.update(value.clamp(50, 500));
+
+  void setVeneraPageTurnVolumeKey(bool value) =>
+      _veneraPageTurnVolumeKey.update(value);
+
+  void setVeneraWheelSensitivity(double value) =>
+      _veneraWheelSensitivity.update(value.clamp(0.25, 4.0));
+
+  Future<void> setReaderEngine(ReaderEngine value, {bool perSeries = true}) =>
+      perSeries
+          ? _patchMeta(MangaMetaKeys.readerEngine, value.name)
+          : _clearMetaThenWriteGlobal(
+              MangaMetaKeys.readerEngine,
+              () => _readerEngineKey.update(value),
+            );
 
   // With perSeries=false, remove the override and update the app-wide default.
 

@@ -617,3 +617,10 @@ enum UpdatesGroupingMode {
     UpdatesGroupingMode.expanded => context.l10n.updatesGroupingModeExpanded,
   };
 }
+
+/// Reader engine switch: Tsumiru native reader or the vendored Venera
+/// engine (venera_engine/adapter). Brand names are not localized.
+enum ReaderEngine {
+  tsumiru,
+  venera;
+}
