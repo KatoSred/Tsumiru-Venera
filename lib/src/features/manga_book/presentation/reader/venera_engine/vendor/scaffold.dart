@@ -419,16 +419,16 @@ class _ReaderScaffoldState extends State<_ReaderScaffold> {
   Widget buildSlider() {
     // Clamp page to maxPage
     final displayPage = context.reader.page.clamp(1, context.reader.maxPage);
-    // VENDOR-CUT: venera CustomSlider replaced by the native Slider for M1
-    // (M5 will swap in Tsumiru's BrandPageSeekbar). The `reversed` hint is
-    // not supported by the native widget and is ignored for now.
-    return Slider(
+    // Original venera CustomSlider restored (reverted the M1 native-Slider
+    // substitution; supports the RTL `reversed` hint).
+    return CustomSlider(
       focusNode: sliderFocus,
       value: displayPage.toDouble(),
       min: 1,
       max: context.reader.maxPage
           .clamp(displayPage, 1 << 16)
           .toDouble(),
+      reversed: isReversed,
       divisions: (context.reader.maxPage - 1).clamp(2, 1 << 16),
       onChanged: (i) {
         context.reader.toPage(i.toInt());

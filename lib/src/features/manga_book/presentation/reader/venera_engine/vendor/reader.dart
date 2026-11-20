@@ -75,6 +75,8 @@ part 'comic_image.dart';
 
 part 'loading.dart';
 
+part 'custom_slider.dart';
+
 part 'chapters.dart';
 
 // VENDOR-CUT: part 'chapter_comments.dart' removed — chapter comments depend
