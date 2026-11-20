@@ -483,18 +483,44 @@ class _ReaderState extends State<Reader>
   @override
   void updateChrome() {
     // ADAPTER: re-read the live reading mode so panel changes apply in
-    // place. `page` is a SCREEN index in BOTH modes and maxPage is
-    // mode-independent, so no page remapping is needed on a mode switch —
-    // the gallery PageController (initialPage) and the continuous list
-    // (initialScrollIndex) both start from the current screen page. The
-    // earlier initImagesPerPage(page) call here double-mapped the page
-    // (it expects an IMAGE index) and broke the position (user report).
+    // place. The two modes have DIFFERENT page semantics — gallery pages
+    // group `imagesPerPage` images per screen (maxPage = ceil(N/per)) while
+    // continuous pages hold exactly one image (maxPage = N) — so convert
+    // the current page to an image index under the OLD mode, then back to
+    // a page under the NEW mode (same math as _updateHistoryState).
     final newMode = ReaderMode.fromKey(
       getReaderSetting(cid, type.sourceKey, 'readerMode'),
     );
     if (newMode != mode) {
+      final oldPer = imagesPerPage;
+      final singleFirst = showSingleImageOnFirstPage();
+      int imageIndex;
+      if (mode.isGallery) {
+        if (!singleFirst || oldPer == 1) {
+          imageIndex = (page - 1) * oldPer + 1;
+        } else if (page <= 1) {
+          imageIndex = 1;
+        } else {
+          imageIndex = (page - 2) * oldPer + 2;
+        }
+      } else {
+        imageIndex = page;
+      }
+
       mode = newMode;
-      _lastImagesPerPage = imagesPerPage;
+      final newPer = imagesPerPage;
+      final newSingleFirst = showSingleImageOnFirstPage();
+      if (!mode.isGallery) {
+        page = imageIndex;
+      } else if (!newSingleFirst || newPer == 1) {
+        page = ((imageIndex - 1) ~/ newPer) + 1;
+      } else if (imageIndex <= 1) {
+        page = 1;
+      } else {
+        page = ((imageIndex - 2) ~/ newPer) + 2;
+      }
+      page = page.clamp(1, maxPage);
+      _lastImagesPerPage = newPer;
       _lastOrientation = isPortrait;
     }
     _scaffoldKey.currentState?.update();
