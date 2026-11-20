@@ -10,6 +10,11 @@ environment:
 
 dependencies:
   app_links: ^7.2.1
+  # Venera 引擎（vendor，GPL-3.0，仅本地分支使用）：分页缩放（venera fork）
+  photo_view:
+    git:
+      url: https://github.com/venera-app/photo_view
+      ref: a1255d1b5945aad4b7323303ec2ecdf0c90ffc4c
   collection: ^1.19.0
   cached_network_image: ^4.0.6
   cached_network_image_platform_interface: ^5.0.3
